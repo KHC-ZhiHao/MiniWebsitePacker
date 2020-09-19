@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+      "target": "es6",
+      "module": "CommonJS",
+      "strict": false,
+      "moduleResolution": "node",
+      "esModuleInterop": true,
+      "baseUrl": "./lib",
+      "outDir": "./dist",
+      "paths": {
+          "@/*": [
+              "lib/*"
+          ]
+      }
+  }
+}
