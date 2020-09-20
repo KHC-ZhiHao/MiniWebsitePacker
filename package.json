@@ -10,6 +10,14 @@
   "bin": {
     "mini-website-packer": "./dist/index.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KHC-ZhiHao/mini-website-packer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/KHC-ZhiHao/mini-website-packer/issues"
+  },
+  "homepage": "https://github.com/KHC-ZhiHao/mini-website-packer#readme",
   "author": "khczhihao",
   "license": "ISC",
   "dependencies": {

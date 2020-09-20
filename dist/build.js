@@ -15,15 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_extra_1 = __importDefault(require("fs-extra"));
 const path_1 = __importDefault(require("path"));
 const pretty_1 = __importDefault(require("pretty"));
-const uglifycss_1 = __importDefault(require("uglifycss"));
 const imagemin_1 = __importDefault(require("imagemin"));
 const imagemin_jpegtran_1 = __importDefault(require("imagemin-jpegtran"));
 const imagemin_pngquant_1 = __importDefault(require("imagemin-pngquant"));
 const reader_1 = require("./reader");
-const core_1 = require("@babel/core");
-const output = './dist';
-function default_1() {
+function default_1(lang) {
     return __awaiter(this, void 0, void 0, function* () {
+        const output = `./dist`;
         const outputFiles = [];
         // 刪除所有編譯過後的檔案
         fs_extra_1.default.removeSync(output);
@@ -47,7 +45,7 @@ function default_1() {
             if (data.ext === '.html') {
                 console.log(`正在編譯HTML: ${data.name}${data.ext}`);
                 let html = fs_extra_1.default.readFileSync(file).toString();
-                let output = reader_1.compile(html);
+                let output = reader_1.compile(html, lang);
                 fs_extra_1.default.writeFileSync(file, pretty_1.default(output));
             }
             // image
@@ -67,27 +65,10 @@ function default_1() {
             // js
             if (data.ext === '.js') {
                 console.log(`正在編譯JS: ${data.name}${data.ext}`);
-                yield new Promise((resolve, reject) => {
-                    let js = fs_extra_1.default.readFileSync(file).toString();
-                    core_1.transform(js, null, (err, result) => {
-                        if (err) {
-                            reject(err);
-                        }
-                        else {
-                            fs_extra_1.default.writeFileSync(file, result.code);
-                            resolve();
-                        }
-                    });
-                });
             }
             // css
             if (data.ext === '.css') {
                 console.log(`正在編譯CSS: ${data.name}${data.ext}`);
-                let uglified = uglifycss_1.default.processFiles([file], {
-                    maxLineLen: 500,
-                    expandVars: true
-                });
-                fs_extra_1.default.writeFileSync(file, uglified);
             }
         }
         console.log('Build done.');

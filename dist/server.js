@@ -8,9 +8,8 @@ const watch_1 = __importDefault(require("watch"));
 const express_1 = __importDefault(require("express"));
 const http_1 = require("http");
 const fs_1 = require("fs");
-const config_1 = __importDefault(require("./config"));
 const reader_1 = require("./reader");
-function default_1() {
+function default_1(props) {
     const app = express_1.default();
     const server = new http_1.Server(app);
     let hasChange = false;
@@ -30,7 +29,7 @@ function default_1() {
                 file = `./pages${req.url}/index.html`;
             }
             let html = fs_1.readFileSync(file);
-            let result = reader_1.compile(html.toString());
+            let result = reader_1.compile(html.toString(), props.lang);
             result += /* html */ `
                 <script>
                     setInterval(() => {
@@ -60,8 +59,8 @@ function default_1() {
             hasChange = false;
         }
     });
-    server.listen(config_1.default.port, config_1.default.host, () => {
-        let url = `http://${config_1.default.host}:${config_1.default.port}`;
+    server.listen(props.port, props.host, () => {
+        let url = `http://${props.host}:${props.port}`;
         console.log(`Server正在運行中: ${url}`);
     });
 }

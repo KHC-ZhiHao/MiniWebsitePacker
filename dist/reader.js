@@ -5,11 +5,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.compile = void 0;
 const fs_extra_1 = __importDefault(require("fs-extra"));
-const config_1 = __importDefault(require("./config"));
 const localDir = './locales';
 const templateDir = './templates';
-function compile(html) {
-    let output = html.replace(/\r\n|\n/g, '');
+function compile(html, lang) {
     let templates = fs_extra_1.default.readdirSync(templateDir).map(file => {
         return {
             name: file.replace('.html', ''),
@@ -17,22 +15,32 @@ function compile(html) {
         };
     });
     // 處理模板
-    for (let { name, content } of templates) {
-        let reg = new RegExp(`<t-${name}>.*?<\/t-${name}>`, 'g');
-        let matchs = output.match(reg);
-        if (matchs) {
-            for (let match of matchs) {
-                let solt = match.replace(new RegExp(`<t-${name}>|<\/t-${name}>`, 'g'), '');
-                let template = content.replace('<!-- SLOT -->', solt);
-                output = output.replace(match, template).replace(/\r\n|\n/g, '');
-            }
-        }
-    }
+    let output = randerTemplate(html, templates);
     // 處理語系
-    let locale = JSON.parse(fs_extra_1.default.readFileSync(`${localDir}/${config_1.default.locale}.json`).toString());
+    let locale = JSON.parse(fs_extra_1.default.readFileSync(`${localDir}/${lang}.json`).toString());
     for (let key in locale) {
         output = output.replace(`{${key}}`, locale[key]);
     }
     return output;
 }
 exports.compile = compile;
+function randerTemplate(html, templates) {
+    let output = html;
+    let matched = false;
+    for (let { name, content } of templates) {
+        let reg = new RegExp(`<t-${name}>.*?<\/t-${name}>`, 'gs');
+        let matchs = output.match(reg);
+        if (matchs) {
+            matched = true;
+            for (let match of matchs) {
+                let solt = match.replace(new RegExp(`<t-${name}>|<\/t-${name}>`, 'g'), '');
+                let template = content.replace('<!-- SLOT -->', solt);
+                output = output.replace(match, template);
+            }
+        }
+    }
+    if (matched) {
+        output = randerTemplate(output, templates);
+    }
+    return output;
+}

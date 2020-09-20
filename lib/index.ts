@@ -7,9 +7,9 @@ import build from './build'
 
 program.version('0.0.1')
 program.arguments('<mode> [name]')
-program.option('--lang', '-l', 'Select Language, default is zh-tw.')
+program.option('--lang <items1>', 'Select Language, default is zh-tw.', 'zh-tw')
 program.action((mode, name = 'my-project') => {
-    let lang: string = program.lang || 'zh-tw'
+    let lang: string = program.lang
     if (mode === 'init') {
         fsx.copySync(`${__dirname}/../example`, `./${name}`)
         console.log('Inited')
