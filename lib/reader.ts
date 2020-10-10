@@ -10,7 +10,7 @@ export function compile(html: string, lang: string): string {
             content: fsx.readFileSync(`${templateDir}/${file}`).toString()
         }
     })
-    // 處理模板
+    // 處理模板與變數
     let output = randerTemplate(html, templates)
     // 處理語系
     let locale = JSON.parse(fsx.readFileSync(`${localDir}/${lang}.json`).toString())
@@ -18,6 +18,29 @@ export function compile(html: string, lang: string): string {
         output = output.replace(`{${key}}`, locale[key])
     }
     return output
+}
+
+function parseVar(text: string, prop: { [key: string]: string } = {}): {
+    text: string
+    prop: { [key: string]: string }
+} {
+    let output = text.trim()
+    if (output.slice(0, 10) === '<prop>') {
+        output = output.replace(/<prop>/i, '')
+        let [key, ...values] = output.split('<\/prop>')[0].split(':')
+        output = output.replace(/.*<\/prop>/i, '')
+        prop[key] = values.join(':')
+        return parseVar(output, prop)
+    }
+    return {
+        text: output,
+        prop
+    }
+}
+
+function parseSlot(name: string, html: string) {
+    let text = html.replace(new RegExp(`<t-${name}>|<\/t-${name}>`, 'g'), '')
+    return parseVar(text)
 }
 
 function randerTemplate(html: string, templates: Array<{ name: string, content: string }>) {
@@ -29,8 +52,12 @@ function randerTemplate(html: string, templates: Array<{ name: string, content: 
         if (matchs) {
             matched = true
             for (let match of matchs) {
-                let solt = match.replace(new RegExp(`<t-${name}>|<\/t-${name}>`, 'g'), '')
-                let template = content.replace('<!-- SLOT -->', solt)
+                let solt = parseSlot(name, match)
+                for (let key in solt.prop) {
+                    content = content.replace(new RegExp(`:${key}:`, 'g'), solt.prop[key])
+                    console.log(content)
+                }
+                let template = content.replace('<!-- SLOT -->', solt.text)
                 output = output.replace(match, template)
             }
         }

@@ -10,7 +10,7 @@ const server_1 = __importDefault(require("./server"));
 const build_1 = __importDefault(require("./build"));
 commander_1.default.version('0.0.1');
 commander_1.default.arguments('<mode> [name]');
-commander_1.default.option('--lang <items1>', 'Select Language, default is zh-tw.', 'zh-tw');
+commander_1.default.option('--lang <target>', 'Select Language, default is zh-tw.', 'zh-tw');
 commander_1.default.action((mode, name = 'my-project') => {
     let lang = commander_1.default.lang;
     if (mode === 'init') {

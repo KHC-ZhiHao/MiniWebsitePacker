@@ -66,6 +66,39 @@ locales、pages、static、templates這四個資料夾是固定的，可以使�
 <div>Hello，Dave<div>
 ```
 
+#### Props
+
+在**模板**中使用`:name:`意味著這個值必須從外部傳遞，傳遞語法為`<prop>key:value</prop>`。
+
+> 注意空白鍵是敏感的。
+
+```html
+<!-- template/wrapper.html -->
+<div>
+    Hello，:name:
+    Your age is :age:
+<div>
+```
+
+```html
+<!-- pages/index.html -->
+<t-wrapper>
+    <prop>name:Dave</prop>
+    <prop>age:18</prop>
+</t-wrapper>
+```
+
+必須注意的是所有的`prop`標籤必須要堆在所有標籤的最前方，也就是`t-template`的第一個標籤。
+
+以下是編譯後的結果：
+
+```html
+<div>
+    Hello，Dave
+    Your age is 18
+<div>
+```
+
 #### 語系
 
 使用`{text}`會去找尋locales檔案中指定的語系(預設是zh-tw)並填入，該語系檔案必須是json檔。

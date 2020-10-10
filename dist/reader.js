@@ -14,7 +14,7 @@ function compile(html, lang) {
             content: fs_extra_1.default.readFileSync(`${templateDir}/${file}`).toString()
         };
     });
-    // 處理模板
+    // 處理模板與變數
     let output = randerTemplate(html, templates);
     // 處理語系
     let locale = JSON.parse(fs_extra_1.default.readFileSync(`${localDir}/${lang}.json`).toString());
@@ -24,6 +24,24 @@ function compile(html, lang) {
     return output;
 }
 exports.compile = compile;
+function parseVar(text, prop = {}) {
+    let output = text.trim();
+    if (output.slice(0, 10) === '<prop>') {
+        output = output.replace(/<prop>/i, '');
+        let [key, ...values] = output.split('<\/prop>')[0].split(':');
+        output = output.replace(/.*<\/prop>/i, '');
+        prop[key] = values.join(':');
+        return parseVar(output, prop);
+    }
+    return {
+        text: output,
+        prop
+    };
+}
+function parseSlot(name, html) {
+    let text = html.replace(new RegExp(`<t-${name}>|<\/t-${name}>`, 'g'), '');
+    return parseVar(text);
+}
 function randerTemplate(html, templates) {
     let output = html;
     let matched = false;
@@ -33,8 +51,12 @@ function randerTemplate(html, templates) {
         if (matchs) {
             matched = true;
             for (let match of matchs) {
-                let solt = match.replace(new RegExp(`<t-${name}>|<\/t-${name}>`, 'g'), '');
-                let template = content.replace('<!-- SLOT -->', solt);
+                let solt = parseSlot(name, match);
+                for (let key in solt.prop) {
+                    content = content.replace(new RegExp(`:${key}:`, 'g'), solt.prop[key]);
+                    console.log(content);
+                }
+                let template = content.replace('<!-- SLOT -->', solt.text);
                 output = output.replace(match, template);
             }
         }
