@@ -25,7 +25,7 @@ function parseVar(text: string, prop: { [key: string]: string } = {}): {
     prop: { [key: string]: string }
 } {
     let output = text.trim()
-    if (output.slice(0, 10) === '<prop>') {
+    if (output.slice(0, 6) === '<prop>') {
         output = output.replace(/<prop>/i, '')
         let [key, ...values] = output.split('<\/prop>')[0].split(':')
         output = output.replace(/.*<\/prop>/i, '')
@@ -55,7 +55,6 @@ function randerTemplate(html: string, templates: Array<{ name: string, content: 
                 let solt = parseSlot(name, match)
                 for (let key in solt.prop) {
                     content = content.replace(new RegExp(`:${key}:`, 'g'), solt.prop[key])
-                    console.log(content)
                 }
                 let template = content.replace('<!-- SLOT -->', solt.text)
                 output = output.replace(match, template)
