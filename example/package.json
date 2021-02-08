@@ -1,0 +1,10 @@
+{
+  "name": "my-project",
+  "scripts": {
+    "serve": "mini-website-packer serve",
+    "build": "mini-website-packer build"
+  },
+  "devDependencies": {
+    "mini-website-packer": "^1.0.1"
+  }
+}

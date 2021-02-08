@@ -19,12 +19,9 @@ const imagemin_1 = __importDefault(require("imagemin"));
 const imagemin_jpegtran_1 = __importDefault(require("imagemin-jpegtran"));
 const imagemin_pngquant_1 = __importDefault(require("imagemin-pngquant"));
 const reader_1 = require("./reader");
-function default_1(lang) {
+function build(output, lang) {
     return __awaiter(this, void 0, void 0, function* () {
-        const output = `./dist`;
         const outputFiles = [];
-        // 刪除所有編譯過後的檔案
-        fs_extra_1.default.removeSync(output);
         // 複製靜態檔案
         fs_extra_1.default.copySync('./static', output + '/static', {
             filter: (src, dest) => {
@@ -39,6 +36,7 @@ function default_1(lang) {
                 return true;
             }
         });
+        // 編譯檔案
         for (let file of outputFiles) {
             let data = path_1.default.parse(file);
             // html
@@ -69,6 +67,24 @@ function default_1(lang) {
             // css
             if (data.ext === '.css') {
                 console.log(`正在編譯CSS: ${data.name}${data.ext}`);
+            }
+        }
+    });
+}
+function default_1(outputDir = './dist') {
+    return __awaiter(this, void 0, void 0, function* () {
+        // 刪除所有編譯過後的檔案
+        if (fs_extra_1.default.existsSync(outputDir)) {
+            fs_extra_1.default.removeSync(outputDir);
+        }
+        // 獲取所有語系檔案
+        let langs = fs_extra_1.default.readdirSync('./locales').map(s => s.replace('.json', ''));
+        for (let lang of langs) {
+            if (lang === 'main') {
+                yield build(outputDir, lang);
+            }
+            else {
+                yield build(`${outputDir}/${lang}`, lang);
             }
         }
         console.log('Build done.');

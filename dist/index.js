@@ -10,21 +10,25 @@ const server_1 = __importDefault(require("./server"));
 const build_1 = __importDefault(require("./build"));
 commander_1.default.version('0.0.1');
 commander_1.default.arguments('<mode> [name]');
-commander_1.default.option('--lang <target>', 'Select Language, default is zh-tw.', 'zh-tw');
+commander_1.default.option('--lang <target>', 'Select Language, default is main.', 'main');
+commander_1.default.option('--port <target>', 'Select Language, default is 8080.', '8080');
+commander_1.default.option('--host <target>', 'Select Language, default is localhost.', 'localhost');
 commander_1.default.action((mode, name = 'my-project') => {
     let lang = commander_1.default.lang;
+    let host = commander_1.default.host;
+    let port = Number(commander_1.default.port);
     if (mode === 'init') {
         fs_extra_1.default.copySync(`${__dirname}/../example`, `./${name}`);
         console.log('Inited');
         process.exit();
     }
     if (mode === 'build') {
-        build_1.default(lang);
+        build_1.default();
     }
     if (mode === 'serve') {
         server_1.default({
-            port: 8080,
-            host: 'localhost',
+            port,
+            host,
             lang
         });
     }

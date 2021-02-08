@@ -1,0 +1,8 @@
+☐ 可以提供展示用的加密檔案
+☐ 編譯JS -> 2015
+☐ 編譯CSS -> prename - https://www.npmjs.com/package/autoprefixer
+☐ 語系輸出一組新的資料夾
+☐ 全局變數，例如指定語系
+☐ JS如何對應語系布局
+☐ CSS如何對應語系布局(最上層的style?)
+☐ 更好的語系處理方案 - https://www.injerry.com/blog-view.php?PID=5&sn=125

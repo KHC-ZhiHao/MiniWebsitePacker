@@ -6,11 +6,8 @@ import imageminJpegtran from 'imagemin-jpegtran'
 import imageminPngquant from 'imagemin-pngquant'
 import { compile } from './reader'
 
-export default async function(lang: string) {
-    const output = `./dist`
+async function build(output: string, lang: string) {
     const outputFiles: Array<string> = []
-    // 刪除所有編譯過後的檔案
-    fsx.removeSync(output)
     // 複製靜態檔案
     fsx.copySync('./static', output + '/static', {
         filter: (src, dest) => {
@@ -25,6 +22,7 @@ export default async function(lang: string) {
             return true
         }
     })
+    // 編譯檔案
     for (let file of outputFiles) {
         let data = path.parse(file)
         // html
@@ -55,6 +53,22 @@ export default async function(lang: string) {
         // css
         if (data.ext === '.css') {
             console.log(`正在編譯CSS: ${data.name}${data.ext}`)
+        }
+    }
+}
+
+export default async function(outputDir = './dist') {
+    // 刪除所有編譯過後的檔案
+    if (fsx.existsSync(outputDir)) {
+        fsx.removeSync(outputDir)
+    }
+    // 獲取所有語系檔案
+    let langs = fsx.readdirSync('./locales').map(s => s.replace('.json', ''))
+    for (let lang of langs) {
+        if (lang === 'main') {
+            await build(outputDir, lang)
+        } else {
+            await build(`${outputDir}/${lang}`, lang)
         }
     }
     console.log('Build done.')
