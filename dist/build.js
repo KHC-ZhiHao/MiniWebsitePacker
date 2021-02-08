@@ -49,8 +49,8 @@ function build(output, lang) {
             // image
             if (data.ext === '.png' || data.ext === '.jpg') {
                 console.log(`正在壓縮: ${data.name}${data.ext}`);
-                let [result] = yield imagemin_1.default([file], {
-                    destination: 'build/images',
+                let buffer = fs_extra_1.default.readFileSync(file);
+                let result = yield imagemin_1.default.buffer(buffer, {
                     plugins: [
                         imagemin_jpegtran_1.default(),
                         imagemin_pngquant_1.default({

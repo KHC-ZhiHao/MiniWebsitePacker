@@ -35,8 +35,8 @@ async function build(output: string, lang: string) {
         // image
         if (data.ext === '.png' || data.ext === '.jpg') {
             console.log(`正在壓縮: ${data.name}${data.ext}`)
-            let [ result ] = await imagemin([file], {
-                destination: 'build/images',
+            let buffer = fsx.readFileSync(file)
+            let result = await imagemin.buffer(buffer, {
                 plugins: [
                     imageminJpegtran(),
                     imageminPngquant({
