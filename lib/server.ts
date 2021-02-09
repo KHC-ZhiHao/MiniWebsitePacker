@@ -71,4 +71,6 @@ export default function(props: Props) {
         let url = `http://${props.host}:${props.port}`
         console.log(`Server正在運行中: ${url}`)
     })
+
+    return server
 }

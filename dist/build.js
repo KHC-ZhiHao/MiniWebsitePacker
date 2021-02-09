@@ -18,7 +18,10 @@ const pretty_1 = __importDefault(require("pretty"));
 const imagemin_1 = __importDefault(require("imagemin"));
 const imagemin_jpegtran_1 = __importDefault(require("imagemin-jpegtran"));
 const imagemin_pngquant_1 = __importDefault(require("imagemin-pngquant"));
+const postcss_1 = __importDefault(require("postcss"));
+const autoprefixer_1 = __importDefault(require("autoprefixer"));
 const reader_1 = require("./reader");
+const babel = require('@babel/core');
 function build(output, lang) {
     return __awaiter(this, void 0, void 0, function* () {
         const outputFiles = [];
@@ -63,10 +66,41 @@ function build(output, lang) {
             // js
             if (data.ext === '.js') {
                 console.log(`正在編譯JS: ${data.name}${data.ext}`);
+                let code = fs_extra_1.default.readFileSync(file).toString();
+                yield new Promise((resolve, reject) => {
+                    babel.transform(code, {
+                        presets: [
+                            [
+                                '@babel/preset-env'
+                            ]
+                        ]
+                    }, (err, result) => {
+                        if (err) {
+                            reject(err);
+                        }
+                        else {
+                            fs_extra_1.default.writeFileSync(file, result.code);
+                            resolve(null);
+                        }
+                    });
+                });
             }
             // css
             if (data.ext === '.css') {
                 console.log(`正在編譯CSS: ${data.name}${data.ext}`);
+                let post = postcss_1.default([
+                    autoprefixer_1.default({
+                        overrideBrowserslist: ['last 2 version', '> 1%', 'IE 10']
+                    })
+                ]);
+                let css = fs_extra_1.default.readFileSync(file).toString();
+                let result = yield post.process(css, { from: undefined });
+                if (result.css) {
+                    fs_extra_1.default.writeFileSync(file, result.css);
+                }
+                else {
+                    fs_extra_1.default.writeFileSync(file, css);
+                }
             }
         }
     });

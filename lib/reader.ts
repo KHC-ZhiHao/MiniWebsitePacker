@@ -3,6 +3,10 @@ import fsx from 'fs-extra'
 const localDir = './locales'
 const templateDir = './templates'
 
+type EnvParams = {
+    lang: string
+}
+
 export function compile(html: string, lang: string): string {
     let templates = fsx.readdirSync(templateDir).map(file => {
         return {
@@ -10,8 +14,12 @@ export function compile(html: string, lang: string): string {
             content: fsx.readFileSync(`${templateDir}/${file}`).toString()
         }
     })
+    // 替換環境參數
+    let origin = randerEnv(html, {
+        lang
+    })
     // 處理模板與變數
-    let output = randerTemplate(html, templates)
+    let output = randerTemplate(origin, templates)
     // 處理語系
     let locale = JSON.parse(fsx.readFileSync(`${localDir}/${lang}.json`).toString())
     for (let key in locale) {
@@ -41,6 +49,10 @@ function parseVar(text: string, prop: { [key: string]: string } = {}): {
 function parseSlot(name: string, html: string) {
     let text = html.replace(new RegExp(`<t-${name}>|<\/t-${name}>`, 'g'), '')
     return parseVar(text)
+}
+
+function randerEnv(html: string, params: EnvParams) {
+    return html.replace('$.lang', params.lang)
 }
 
 function randerTemplate(html: string, templates: Array<{ name: string, content: string }>) {
