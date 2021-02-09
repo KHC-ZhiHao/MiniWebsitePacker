@@ -46,7 +46,7 @@ export default function(props: Props) {
                                     location.reload()
                                 }
                             })
-                            oReq.open('POST', '/onchange?height=123')
+                            oReq.open('POST', '/onchange')
                             oReq.send()
                     }, 1500)
                 </script>
