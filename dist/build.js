@@ -21,7 +21,6 @@ const imagemin_pngquant_1 = __importDefault(require("imagemin-pngquant"));
 const postcss_1 = __importDefault(require("postcss"));
 const autoprefixer_1 = __importDefault(require("autoprefixer"));
 const reader_1 = require("./reader");
-const babel = require('@babel/core');
 function build(output, lang) {
     return __awaiter(this, void 0, void 0, function* () {
         const outputFiles = [];
@@ -66,6 +65,7 @@ function build(output, lang) {
             // js
             if (data.ext === '.js') {
                 console.log(`正在編譯JS: ${data.name}${data.ext}`);
+                let babel = require('@babel/core');
                 let code = fs_extra_1.default.readFileSync(file).toString();
                 yield new Promise((resolve, reject) => {
                     babel.transform(code, {
@@ -105,7 +105,7 @@ function build(output, lang) {
         }
     });
 }
-function default_1(outputDir = './dist') {
+function default_1(mainLang, outputDir = './dist') {
     return __awaiter(this, void 0, void 0, function* () {
         // 刪除所有編譯過後的檔案
         if (fs_extra_1.default.existsSync(outputDir)) {
@@ -114,7 +114,7 @@ function default_1(outputDir = './dist') {
         // 獲取所有語系檔案
         let langs = fs_extra_1.default.readdirSync('./locales').map(s => s.replace('.json', ''));
         for (let lang of langs) {
-            if (lang === 'main') {
+            if (lang === mainLang) {
                 yield build(outputDir, lang);
             }
             else {

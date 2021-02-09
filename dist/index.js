@@ -8,9 +8,8 @@ const fs_extra_1 = __importDefault(require("fs-extra"));
 const commander_1 = __importDefault(require("commander"));
 const server_1 = __importDefault(require("./server"));
 const build_1 = __importDefault(require("./build"));
-commander_1.default.version('0.0.1');
+commander_1.default.version('0.0.2');
 commander_1.default.arguments('<mode> [name]');
-commander_1.default.option('--output <target>', 'Output File, default is dist.', 'dist');
 commander_1.default.option('--lang <target>', 'Main Language, default is zh.', 'zh');
 commander_1.default.option('--port <target>', 'Select Language, default is 8080.', '8080');
 commander_1.default.option('--host <target>', 'Select Language, default is localhost.', 'localhost');
@@ -24,7 +23,7 @@ commander_1.default.action((mode, name = 'my-project') => {
         process.exit();
     }
     if (mode === 'build') {
-        build_1.default();
+        build_1.default(lang);
     }
     if (mode === 'serve') {
         server_1.default({

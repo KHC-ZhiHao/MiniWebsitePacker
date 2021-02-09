@@ -63,5 +63,6 @@ function default_1(props) {
         let url = `http://${props.host}:${props.port}`;
         console.log(`Server正在運行中: ${url}`);
     });
+    return server;
 }
 exports.default = default_1;
