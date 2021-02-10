@@ -15,16 +15,26 @@ export function compile(html: string, params: EnvParams): string {
             content: fsx.readFileSync(`${templateDir}/${file}`).toString()
         }
     })
+    // 清除系統註解
+    html = clearComment(html)
     // 替換環境參數
-    let origin = randerEnv(html, params)
+    html = randerEnv(html, params)
     // 處理模板與變數
-    let output = randerTemplate(origin, templates)
+    html = randerTemplate(html, templates)
     // 處理語系
     let locale = JSON.parse(fsx.readFileSync(`${localDir}/${params.lang}.json`).toString())
     for (let key in locale) {
-        output = output.replace(`{${key}}`, locale[key])
+        html = html.replace(`{${key}}`, locale[key])
     }
-    return output
+    return html
+}
+
+function clearComment(text: string) {
+    let warns = text.match(/<!--!.*!-->/g) || []
+    for (let warn of warns) {
+        console.warn('Comment Wanm: ', warn)
+    }
+    return text.replace(/<\!---.*--->/g, '').replace(/<!--!.*!-->/g, '')
 }
 
 function parseVar(text: string, prop: { [key: string]: string } = {}): {
@@ -51,9 +61,7 @@ function parseSlot(name: string, html: string) {
 }
 
 function randerEnv(html: string, params: EnvParams) {
-    return html
-        .replace('${lang}', params.lang)
-        .replace('${env}', params.env)
+    return html.replace(/\$\{lang\}/, params.lang).replace(/\$\{env\}/, params.env)
 }
 
 function randerTemplate(html: string, templates: Array<{ name: string, content: string }>) {
