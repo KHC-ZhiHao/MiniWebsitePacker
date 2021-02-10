@@ -7,7 +7,7 @@ exports.compile = void 0;
 const fs_extra_1 = __importDefault(require("fs-extra"));
 const localDir = './locales';
 const templateDir = './templates';
-function compile(html, lang) {
+function compile(html, params) {
     let templates = fs_extra_1.default.readdirSync(templateDir).map(file => {
         return {
             name: file.replace('.html', ''),
@@ -15,13 +15,11 @@ function compile(html, lang) {
         };
     });
     // 替換環境參數
-    let origin = randerEnv(html, {
-        lang
-    });
+    let origin = randerEnv(html, params);
     // 處理模板與變數
     let output = randerTemplate(origin, templates);
     // 處理語系
-    let locale = JSON.parse(fs_extra_1.default.readFileSync(`${localDir}/${lang}.json`).toString());
+    let locale = JSON.parse(fs_extra_1.default.readFileSync(`${localDir}/${params.lang}.json`).toString());
     for (let key in locale) {
         output = output.replace(`{${key}}`, locale[key]);
     }
@@ -47,7 +45,9 @@ function parseSlot(name, html) {
     return parseVar(text);
 }
 function randerEnv(html, params) {
-    return html.replace('$.lang', params.lang);
+    return html
+        .replace('${lang}', params.lang)
+        .replace('${env}', params.env);
 }
 function randerTemplate(html, templates) {
     let output = html;

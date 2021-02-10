@@ -1,19 +1,15 @@
 # 歡迎使用Mini-WebSite-Packer v1.0
 
-這是使用[Mini-WebSite-Packer](https://github.com/KHC-ZhiHao/mini-website-packer)建置而成的專案，開始前請先安裝MWP CLI:
-
-```bash
-npm install -g mini-website-packer
-```
+這是使用[Mini-WebSite-Packer](https://github.com/KHC-ZhiHao/mini-website-packer)建置而成的專案。
 
 開啟開發模式
 
 ```bash
-mini-website-packer serve --lang zh-tw
+npm run serve
 ```
 
 打包程式
 
 ```bash
-mini-website-packer build --lang zh-tw
+npm run build
 ```

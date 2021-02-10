@@ -31,7 +31,10 @@ async function build(output: string, lang: string) {
         if (data.ext === '.html') {
             console.log(`正在編譯HTML: ${data.name}${data.ext}`)
             let html = fsx.readFileSync(file).toString()
-            let output = compile(html, lang)
+            let output = compile(html, {
+                env: 'prod',
+                lang
+            })
             fsx.writeFileSync(file, pretty(output))
         }
         // image

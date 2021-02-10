@@ -45,7 +45,10 @@ function build(output, lang) {
             if (data.ext === '.html') {
                 console.log(`正在編譯HTML: ${data.name}${data.ext}`);
                 let html = fs_extra_1.default.readFileSync(file).toString();
-                let output = reader_1.compile(html, lang);
+                let output = reader_1.compile(html, {
+                    env: 'prod',
+                    lang
+                });
                 fs_extra_1.default.writeFileSync(file, pretty_1.default(output));
             }
             // image

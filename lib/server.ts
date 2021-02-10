@@ -36,7 +36,10 @@ export default function(props: Props) {
                 file = `./pages${req.url}/index.html`
             }
             let html = readFileSync(file)
-            let result = compile(html.toString(), props.lang)
+            let result = compile(html.toString(), {
+                env: 'dev',
+                lang: props.lang
+            })
             result += /* html */`
                 <script>
                     setInterval(() => {

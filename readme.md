@@ -48,7 +48,18 @@ locales、pages、static、templates、package.json 這四個資料夾或檔案�
 
 #### 環境變數
 
-在 html 文件裡面可以被替換掉的系統變數，通常以 $.name 的方式命名。
+在 html 文件裡面可以被替換掉的系統變數，通常以 ${name} 的方式命名。
+
+##### $.env
+
+會有 dev、prod 兩種型態，分別代表現在是開發狀態還是部屬狀態。
+
+```js
+// 編譯前
+<script src="core.${env}.js"></script>
+// 編譯後
+<script src="core.dev.js"></script>
+```
 
 ##### $.lang
 
@@ -56,7 +67,7 @@ locales、pages、static、templates、package.json 這四個資料夾或檔案�
 
 ```js
 // 編譯前
-<html lang="$.lang"></html>
+<html lang="${lang}"></html>
 // 編譯後
 <html lang="zh"></html>
 ```

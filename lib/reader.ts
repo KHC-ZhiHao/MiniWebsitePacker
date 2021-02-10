@@ -4,10 +4,11 @@ const localDir = './locales'
 const templateDir = './templates'
 
 type EnvParams = {
+    env: string
     lang: string
 }
 
-export function compile(html: string, lang: string): string {
+export function compile(html: string, params: EnvParams): string {
     let templates = fsx.readdirSync(templateDir).map(file => {
         return {
             name: file.replace('.html', ''),
@@ -15,13 +16,11 @@ export function compile(html: string, lang: string): string {
         }
     })
     // 替換環境參數
-    let origin = randerEnv(html, {
-        lang
-    })
+    let origin = randerEnv(html, params)
     // 處理模板與變數
     let output = randerTemplate(origin, templates)
     // 處理語系
-    let locale = JSON.parse(fsx.readFileSync(`${localDir}/${lang}.json`).toString())
+    let locale = JSON.parse(fsx.readFileSync(`${localDir}/${params.lang}.json`).toString())
     for (let key in locale) {
         output = output.replace(`{${key}}`, locale[key])
     }
@@ -52,7 +51,9 @@ function parseSlot(name: string, html: string) {
 }
 
 function randerEnv(html: string, params: EnvParams) {
-    return html.replace('$.lang', params.lang)
+    return html
+        .replace('${lang}', params.lang)
+        .replace('${env}', params.env)
 }
 
 function randerTemplate(html: string, templates: Array<{ name: string, content: string }>) {
