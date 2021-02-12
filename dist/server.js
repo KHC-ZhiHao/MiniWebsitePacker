@@ -29,7 +29,7 @@ function default_1(props) {
                 file = `./pages${req.url}/index.html`;
             }
             let html = fs_1.readFileSync(file);
-            let result = reader_1.compile(html.toString(), {
+            let result = reader_1.compile(file, html.toString(), {
                 env: 'dev',
                 lang: props.lang
             });

@@ -6,9 +6,13 @@ import imageminJpegtran from 'imagemin-jpegtran'
 import imageminPngquant from 'imagemin-pngquant'
 import postcss from 'postcss'
 import autoprefixer from 'autoprefixer'
+import htmlMinifier from 'html-minifier'
+import CleanCss from 'clean-css'
+import { minify } from "terser"
 import { compile } from './reader'
 
-async function build(output: string, lang: string) {
+
+async function build(output: string, lang: string, mini: boolean) {
     const outputFiles: Array<string> = []
     // 複製靜態檔案
     fsx.copySync('./static', output + '/static', {
@@ -31,11 +35,24 @@ async function build(output: string, lang: string) {
         if (data.ext === '.html') {
             console.log(`正在編譯HTML: ${data.name}${data.ext}`)
             let html = fsx.readFileSync(file).toString()
-            let output = compile(html, {
+            let output = compile(file, html, {
                 env: 'prod',
                 lang
             })
-            fsx.writeFileSync(file, pretty(output))
+            if (mini) {
+                fsx.writeFileSync(file, htmlMinifier.minify(output, {
+                    minifyJS: true,
+                    minifyCSS: true,
+                    useShortDoctype: true,
+                    preserveLineBreaks: true,
+                    collapseWhitespace: true,
+                    collapseInlineTagWhitespace: true,
+                    conservativeCollapse: true,
+                    removeComments: true
+                }))
+            } else {
+                fsx.writeFileSync(file, pretty(output))
+            }
         }
         // image
         if (data.ext === '.png' || data.ext === '.jpg') {
@@ -54,24 +71,29 @@ async function build(output: string, lang: string) {
         // js
         if (data.ext === '.js') {
             console.log(`正在編譯JS: ${data.name}${data.ext}`)
-            let babel = require('@babel/core')
+            // let babel = require('@babel/core')
             let code = fsx.readFileSync(file).toString()
-            await new Promise((resolve, reject) => {
-                babel.transform(code, {
-                    presets: [
-                        [
-                            '@babel/preset-env'
-                        ]
-                    ]
-                }, (err, result) => {
-                    if (err) {
-                        reject(err)
-                    } else {
-                        fsx.writeFileSync(file, result.code)
-                        resolve(null)
-                    }
-                })
-            })
+            let output = code
+            // let output: string = await new Promise((resolve, reject) => {
+            //     babel.transform(code, {
+            //         presets: [
+            //             [
+            //                 '@babel/preset-env'
+            //             ]
+            //         ]
+            //     }, (err, result) => {
+            //         if (err) {
+            //             reject(err)
+            //         } else {
+            //             resolve(result.code)
+            //         }
+            //     })
+            // })
+            if (mini) {
+                fsx.writeFileSync(file, (await minify(output)).code)
+            } else {
+                fsx.writeFileSync(file, output)
+            }
         }
         // css
         if (data.ext === '.css') {
@@ -82,17 +104,21 @@ async function build(output: string, lang: string) {
                 })
             ])
             let css = fsx.readFileSync(file).toString()
+            let output = css
             let result = await post.process(css, { from: undefined })
             if (result.css) {
-                fsx.writeFileSync(file, result.css)
+                output = result.css
+            }
+            if (mini) {
+                fsx.writeFileSync(file, (new CleanCss().minify(output).styles))
             } else {
-                fsx.writeFileSync(file, css)
+                fsx.writeFileSync(file, output)
             }
         }
     }
 }
 
-export default async function(mainLang: string, outputDir: string = './dist') {
+export default async function(mainLang: string, outputDir: string, mini: boolean) {
     // 刪除所有編譯過後的檔案
     if (fsx.existsSync(outputDir)) {
         fsx.removeSync(outputDir)
@@ -101,9 +127,9 @@ export default async function(mainLang: string, outputDir: string = './dist') {
     let langs = fsx.readdirSync('./locales').map(s => s.replace('.json', ''))
     for (let lang of langs) {
         if (lang === mainLang) {
-            await build(outputDir, lang)
+            await build(outputDir, lang, mini)
         } else {
-            await build(`${outputDir}/${lang}`, lang)
+            await build(`${outputDir}/${lang}`, lang, mini)
         }
     }
     console.log('Build done.')

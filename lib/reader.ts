@@ -8,19 +8,15 @@ type EnvParams = {
     lang: string
 }
 
-export function compile(html: string, params: EnvParams): string {
+export function compile(file: string, html: string, params: EnvParams): string {
     let templates = fsx.readdirSync(templateDir).map(file => {
         return {
             name: file.replace('.html', ''),
             content: fsx.readFileSync(`${templateDir}/${file}`).toString()
         }
     })
-    // 清除系統註解
-    html = clearComment(html)
-    // 替換環境參數
-    html = randerEnv(html, params)
     // 處理模板與變數
-    html = randerTemplate(html, templates)
+    html = randerTemplate(file, html, templates, params)
     // 處理語系
     let locale = JSON.parse(fsx.readFileSync(`${localDir}/${params.lang}.json`).toString())
     for (let key in locale) {
@@ -29,10 +25,14 @@ export function compile(html: string, params: EnvParams): string {
     return html
 }
 
-function clearComment(text: string) {
-    let warns = text.match(/<!--!.*!-->/g) || []
-    for (let warn of warns) {
-        console.warn('Comment Wanm: ', warn)
+function clearComment(file: string, text: string) {
+    let lines = text.split('\n')
+    for (let i = 0; i < lines.length; i++) {
+        let line = lines[i]
+        let warns = line.match(/<!--!.*!-->/g) || []
+        for (let warn of warns) {
+            console.warn(`Comment ${file} (line: ${i + 1}): ${warn}`)
+        }
     }
     return text.replace(/<\!---.*--->/g, '').replace(/<!--!.*!-->/g, '')
 }
@@ -64,7 +64,11 @@ function randerEnv(html: string, params: EnvParams) {
     return html.replace(/\$\{lang\}/, params.lang).replace(/\$\{env\}/, params.env)
 }
 
-function randerTemplate(html: string, templates: Array<{ name: string, content: string }>) {
+function randerTemplate(file: string, html: string, templates: Array<{ name: string, content: string }>, params: EnvParams) {
+    // 清除系統註解
+    html = clearComment(file, html)
+    // 替換環境參數
+    html = randerEnv(html, params)
     let output = html
     let matched = false
     for (let { name, content } of templates) {
@@ -83,7 +87,7 @@ function randerTemplate(html: string, templates: Array<{ name: string, content: 
         }
     }
     if (matched) {
-        output = randerTemplate(output, templates)
+        output = randerTemplate(file, output, templates, params)
     }
     return output
 }

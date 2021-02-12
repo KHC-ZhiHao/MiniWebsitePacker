@@ -2,7 +2,7 @@
   "name": "my-project",
   "scripts": {
     "serve": "mini-website-packer serve --lang zh",
-    "build": "mini-website-packer build"
+    "build": "mini-website-packer build --mini"
   },
   "devDependencies": {
     "@babel/core": "^7.12.13",

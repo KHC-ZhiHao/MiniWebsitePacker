@@ -7,25 +7,34 @@ exports.compile = void 0;
 const fs_extra_1 = __importDefault(require("fs-extra"));
 const localDir = './locales';
 const templateDir = './templates';
-function compile(html, params) {
+function compile(file, html, params) {
     let templates = fs_extra_1.default.readdirSync(templateDir).map(file => {
         return {
             name: file.replace('.html', ''),
             content: fs_extra_1.default.readFileSync(`${templateDir}/${file}`).toString()
         };
     });
-    // 替換環境參數
-    let origin = randerEnv(html, params);
     // 處理模板與變數
-    let output = randerTemplate(origin, templates);
+    html = randerTemplate(file, html, templates, params);
     // 處理語系
     let locale = JSON.parse(fs_extra_1.default.readFileSync(`${localDir}/${params.lang}.json`).toString());
     for (let key in locale) {
-        output = output.replace(`{${key}}`, locale[key]);
+        html = html.replace(`{${key}}`, locale[key]);
     }
-    return output;
+    return html;
 }
 exports.compile = compile;
+function clearComment(file, text) {
+    let lines = text.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+        let warns = line.match(/<!--!.*!-->/g) || [];
+        for (let warn of warns) {
+            console.warn(`Comment ${file} (line: ${i + 1}): ${warn}`);
+        }
+    }
+    return text.replace(/<\!---.*--->/g, '').replace(/<!--!.*!-->/g, '');
+}
 function parseVar(text, prop = {}) {
     let output = text.trim();
     if (output.slice(0, 6) === '<prop>') {
@@ -45,11 +54,13 @@ function parseSlot(name, html) {
     return parseVar(text);
 }
 function randerEnv(html, params) {
-    return html
-        .replace('${lang}', params.lang)
-        .replace('${env}', params.env);
+    return html.replace(/\$\{lang\}/, params.lang).replace(/\$\{env\}/, params.env);
 }
-function randerTemplate(html, templates) {
+function randerTemplate(file, html, templates, params) {
+    // 清除系統註解
+    html = clearComment(file, html);
+    // 替換環境參數
+    html = randerEnv(html, params);
     let output = html;
     let matched = false;
     for (let { name, content } of templates) {
@@ -68,7 +79,7 @@ function randerTemplate(html, templates) {
         }
     }
     if (matched) {
-        output = randerTemplate(output, templates);
+        output = randerTemplate(file, output, templates, params);
     }
     return output;
 }

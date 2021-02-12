@@ -20,8 +20,11 @@ const imagemin_jpegtran_1 = __importDefault(require("imagemin-jpegtran"));
 const imagemin_pngquant_1 = __importDefault(require("imagemin-pngquant"));
 const postcss_1 = __importDefault(require("postcss"));
 const autoprefixer_1 = __importDefault(require("autoprefixer"));
+const html_minifier_1 = __importDefault(require("html-minifier"));
+const clean_css_1 = __importDefault(require("clean-css"));
+const terser_1 = require("terser");
 const reader_1 = require("./reader");
-function build(output, lang) {
+function build(output, lang, mini) {
     return __awaiter(this, void 0, void 0, function* () {
         const outputFiles = [];
         // 複製靜態檔案
@@ -45,11 +48,25 @@ function build(output, lang) {
             if (data.ext === '.html') {
                 console.log(`正在編譯HTML: ${data.name}${data.ext}`);
                 let html = fs_extra_1.default.readFileSync(file).toString();
-                let output = reader_1.compile(html, {
+                let output = reader_1.compile(file, html, {
                     env: 'prod',
                     lang
                 });
-                fs_extra_1.default.writeFileSync(file, pretty_1.default(output));
+                if (mini) {
+                    fs_extra_1.default.writeFileSync(file, html_minifier_1.default.minify(output, {
+                        minifyJS: true,
+                        minifyCSS: true,
+                        useShortDoctype: true,
+                        preserveLineBreaks: true,
+                        collapseWhitespace: true,
+                        collapseInlineTagWhitespace: true,
+                        conservativeCollapse: true,
+                        removeComments: true
+                    }));
+                }
+                else {
+                    fs_extra_1.default.writeFileSync(file, pretty_1.default(output));
+                }
             }
             // image
             if (data.ext === '.png' || data.ext === '.jpg') {
@@ -68,25 +85,30 @@ function build(output, lang) {
             // js
             if (data.ext === '.js') {
                 console.log(`正在編譯JS: ${data.name}${data.ext}`);
-                let babel = require('@babel/core');
+                // let babel = require('@babel/core')
                 let code = fs_extra_1.default.readFileSync(file).toString();
-                yield new Promise((resolve, reject) => {
-                    babel.transform(code, {
-                        presets: [
-                            [
-                                '@babel/preset-env'
-                            ]
-                        ]
-                    }, (err, result) => {
-                        if (err) {
-                            reject(err);
-                        }
-                        else {
-                            fs_extra_1.default.writeFileSync(file, result.code);
-                            resolve(null);
-                        }
-                    });
-                });
+                let output = code;
+                // let output: string = await new Promise((resolve, reject) => {
+                //     babel.transform(code, {
+                //         presets: [
+                //             [
+                //                 '@babel/preset-env'
+                //             ]
+                //         ]
+                //     }, (err, result) => {
+                //         if (err) {
+                //             reject(err)
+                //         } else {
+                //             resolve(result.code)
+                //         }
+                //     })
+                // })
+                if (mini) {
+                    fs_extra_1.default.writeFileSync(file, (yield terser_1.minify(output)).code);
+                }
+                else {
+                    fs_extra_1.default.writeFileSync(file, output);
+                }
             }
             // css
             if (data.ext === '.css') {
@@ -97,18 +119,22 @@ function build(output, lang) {
                     })
                 ]);
                 let css = fs_extra_1.default.readFileSync(file).toString();
+                let output = css;
                 let result = yield post.process(css, { from: undefined });
                 if (result.css) {
-                    fs_extra_1.default.writeFileSync(file, result.css);
+                    output = result.css;
+                }
+                if (mini) {
+                    fs_extra_1.default.writeFileSync(file, (new clean_css_1.default().minify(output).styles));
                 }
                 else {
-                    fs_extra_1.default.writeFileSync(file, css);
+                    fs_extra_1.default.writeFileSync(file, output);
                 }
             }
         }
     });
 }
-function default_1(mainLang, outputDir = './dist') {
+function default_1(mainLang, outputDir, mini) {
     return __awaiter(this, void 0, void 0, function* () {
         // 刪除所有編譯過後的檔案
         if (fs_extra_1.default.existsSync(outputDir)) {
@@ -118,10 +144,10 @@ function default_1(mainLang, outputDir = './dist') {
         let langs = fs_extra_1.default.readdirSync('./locales').map(s => s.replace('.json', ''));
         for (let lang of langs) {
             if (lang === mainLang) {
-                yield build(outputDir, lang);
+                yield build(outputDir, lang, mini);
             }
             else {
-                yield build(`${outputDir}/${lang}`, lang);
+                yield build(`${outputDir}/${lang}`, lang, mini);
             }
         }
         console.log('Build done.');
