@@ -24,7 +24,7 @@ npm install
 
 **開啟開發模式**
 
-在開發模式中會有簡易的hot reload功能。
+在開發模式中會有簡易的 hot reload 功能，選項 lang 可以指定使用哪種語言作為預覽。
 
 ```bash
 mini-website-packer serve --lang zh
@@ -32,10 +32,12 @@ mini-website-packer serve --lang zh
 
 **打包程式**
 
-打包後的結果會輸出在`dist`資料夾中。
+打包後的結果會輸出在`dist`資料夾中，選項 mini 會壓縮文檔，選項 lang 則是選擇哪種語言作為主要語言，其他語言仍然會輸出自己的資料夾。
+
+> mini
 
 ```bash
-mini-website-packer build
+mini-website-packer build --mini --lang zh
 ```
 
 ## 說明
@@ -50,7 +52,7 @@ locales、pages、static、templates、package.json 這四個資料夾或檔案�
 
 在 html 文件裡面可以被替換掉的系統變數，通常以 ${name} 的方式命名。
 
-##### $.env
+##### ${env}
 
 會有 dev、prod 兩種型態，分別代表現在是開發狀態還是部屬狀態。
 
@@ -61,7 +63,7 @@ locales、pages、static、templates、package.json 這四個資料夾或檔案�
 <script src="core.dev.js"></script>
 ```
 
-##### $.lang
+##### ${lang}
 
 獲取當下編譯環境中的語系：
 
@@ -74,12 +76,12 @@ locales、pages、static、templates、package.json 這四個資料夾或檔案�
 
 #### 模板
 
-使用`<t-filename></t-filename>`的標籤會在編譯過程中自動找尋`templates`檔案中相對應的檔案名稱，這個標籤**不支援任何屬性**外，可以使用`<!-- SOLT -->`語法來表明插槽位置。
+使用`<t-filename></t-filename>`的標籤會在編譯過程中自動找尋`templates`檔案中相對應的檔案名稱，這個標籤**不支援任何Tag屬性)**(例如: class)，可以使用`<slot></slot>`語法來表明插槽位置。
 
 ```html
 <!-- template/wrapper.html -->
 <div>
-    Hello，<!-- SOLT -->
+    Hello，<slot></slot>
 <div>
 ```
 
@@ -98,7 +100,7 @@ locales、pages、static、templates、package.json 這四個資料夾或檔案�
 
 #### Props
 
-在**模板**中使用`:name:`意味著這個值必須從外部傳遞，傳遞語法為`<prop>key:value</prop>`。
+在**模板**中使用`:name:`意味著這個值必須從外部傳遞。
 
 > 注意空白鍵是敏感的。
 
@@ -112,13 +114,8 @@ locales、pages、static、templates、package.json 這四個資料夾或檔案�
 
 ```html
 <!-- pages/index.html -->
-<t-wrapper>
-    <prop>name:Dave</prop>
-    <prop>age:18</prop>
-</t-wrapper>
+<t-wrapper name="Dave" age="18"></t-wrapper>
 ```
-
-必須注意的是所有的`prop`標籤必須要堆在所有標籤的最前方，也就是`t-template`的第一個標籤。
 
 以下是編譯後的結果：
 
@@ -167,4 +164,20 @@ locales、pages、static、templates、package.json 這四個資料夾或檔案�
     <!-- 這樣即可獲取static中的圖檔 -->
     <img src="./static/logo.png">
 <div>
+```
+
+## 高級註解
+
+使用三減號註解可以在編譯過程中被移除，可以避免要交付的程式碼中包含自己的開發邏輯：
+
+```html
+<!--- Props: title --->
+<div>:title:</div>
+```
+
+使用警告註解可以在編譯過程中發出警告，目的在於給未定義的參數添加檢查提示：
+
+```html
+<!--! 這裡還沒有填入資料 !-->
+<div>...</div>
 ```

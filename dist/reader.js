@@ -35,23 +35,22 @@ function clearComment(file, text) {
     }
     return text.replace(/<\!---.*--->/g, '').replace(/<!--!.*!-->/g, '');
 }
-function parseVar(text, prop = {}) {
-    let output = text.trim();
-    if (output.slice(0, 6) === '<prop>') {
-        output = output.replace(/<prop>/i, '');
-        let [key, ...values] = output.split('<\/prop>')[0].split(':');
-        output = output.replace(/.*<\/prop>/i, '');
-        prop[key] = values.join(':');
-        return parseVar(output, prop);
+function parseSlot(name, html) {
+    let text = html.replace(new RegExp(`<t-${name}.*?>|<\/t-${name}>`, 'gs'), '');
+    let props = {};
+    let propsText = html.match(new RegExp(`<t-${name}.*?>`, 'gs'));
+    if (propsText && propsText[0]) {
+        let attrs = (propsText[0].match(/\s.*?".*?"/gs) || []).filter(e => !!e).map(e => e.trim());
+        for (let i = 0; i < attrs.length; i++) {
+            let text = attrs[i];
+            let [key, value] = text.split('=');
+            props[key] = value.slice(1, -1);
+        }
     }
     return {
-        text: output,
-        prop
+        text,
+        props
     };
-}
-function parseSlot(name, html) {
-    let text = html.replace(new RegExp(`<t-${name}>|<\/t-${name}>`, 'g'), '');
-    return parseVar(text);
 }
 function randerEnv(html, params) {
     return html.replace(/\$\{lang\}/, params.lang).replace(/\$\{env\}/, params.env);
@@ -64,16 +63,16 @@ function randerTemplate(file, html, templates, params) {
     let output = html;
     let matched = false;
     for (let { name, content } of templates) {
-        let reg = new RegExp(`<t-${name}>.*?<\/t-${name}>`, 'gs');
+        let reg = new RegExp(`<t-${name}.*?<\/t-${name}>`, 'gs');
         let matchs = output.match(reg);
         if (matchs) {
             matched = true;
             for (let match of matchs) {
                 let solt = parseSlot(name, match);
-                for (let key in solt.prop) {
-                    content = content.replace(new RegExp(`:${key}:`, 'g'), solt.prop[key]);
+                for (let key in solt.props) {
+                    content = content.replace(new RegExp(`:${key}:`, 'g'), solt.props[key]);
                 }
-                let template = content.replace('<!-- SLOT -->', solt.text);
+                let template = content.replace(/<slot><\/slot>/g, solt.text);
                 output = output.replace(match, template);
             }
         }
