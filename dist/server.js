@@ -40,11 +40,10 @@ function default_1(props) {
         interval: 1.5,
         ignoreDirectoryPattern: /node_modules/
     }, () => __awaiter(this, void 0, void 0, function* () {
-        console.log('Change...');
+        console.log('Building...');
         yield buildFile();
         hasChange = true;
     }));
-    buildFile();
     app.use(cors_1.default());
     app.use(express_1.default.static(props.outputDir, {
         extensions: ['html']

@@ -38,12 +38,10 @@ export default function(props: Props) {
         interval: 1.5,
         ignoreDirectoryPattern: /node_modules/
     }, async() => {
-        console.log('Change...')
+        console.log('Building...')
         await buildFile()
         hasChange = true
     })
-
-    buildFile()
 
     app.use(cors())
     app.use(express.static(props.outputDir, {
