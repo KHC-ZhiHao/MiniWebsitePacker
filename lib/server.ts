@@ -1,65 +1,54 @@
+import fsx from 'fs-extra'
 import cors from 'cors'
 import watch from 'watch'
+import build from './build'
 import express from 'express'
 import { Server } from 'http'
-import { readFileSync, existsSync } from 'fs'
-import { compile } from './reader'
+import { rootDir } from './dir'
 
 type Props = {
     port: number
     host: string
     lang: string
+    confPath: string
+    outputDir: string
 }
 
 export default function(props: Props) {
 
     const app = express()
     const server = new Server(app)
+    const buildFile = async() => {
+        let config = {}
+        if (props.confPath) {
+            config = JSON.parse(fsx.readFileSync(props.confPath).toString())
+        }
+        await build({
+            config,
+            env: 'dev',
+            lang: props.lang,
+            mini: false,
+            outputDir: props.outputDir
+        })
+    }
 
     let hasChange = false
 
-    watch.watchTree('.', {
+    watch.watchTree(rootDir, {
         interval: 1.5,
         ignoreDirectoryPattern: /node_modules/
-    }, () => {
+    }, async() => {
+        console.log('Change...')
+        await buildFile()
         hasChange = true
     })
 
+    buildFile()
+
     app.use(cors())
-    app.use(express.static('.'))
-    
-    app.get('*', function(req, res) {
-        try {
-            let fileName = req.url.match('html') ? req.url : req.url + '.html'
-            let file = `./pages${fileName}`
-            if (existsSync(file) === false) {
-                file = `./pages${req.url}/index.html`
-            }
-            let html = readFileSync(file)
-            let result = compile(file, html.toString(), {
-                env: 'dev',
-                lang: props.lang
-            })
-            result += /* html */`
-                <script>
-                    setInterval(() => {
-                        let oReq = new XMLHttpRequest()
-                            oReq.addEventListener('load', (data) => {
-                                if (JSON.parse(oReq.response).result) {
-                                    location.reload()
-                                }
-                            })
-                            oReq.open('POST', '/onchange')
-                            oReq.send()
-                    }, 1500)
-                </script>
-            `
-            res.send(result)
-        } catch (error) {
-            res.statusCode = 404
-            res.send(`Error - ${error}`)
-        }
-    })
+    app.use(express.static(props.outputDir, {
+        extensions: ['html']
+    }))
 
     app.post('/onchange', (req, res) => {
         res.json({

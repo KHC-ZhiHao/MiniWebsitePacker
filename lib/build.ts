@@ -9,20 +9,35 @@ import autoprefixer from 'autoprefixer'
 import htmlMinifier from 'html-minifier'
 import CleanCss from 'clean-css'
 import { minify } from "terser"
-import { compile } from './reader'
+import { compile, compileCss } from './reader'
+import { staticDir, pageDir, localDir } from './dir'
 
+type Params = {
+    env: 'prod' | 'dev'
+    mini: boolean,
+    outputDir: string
+    lang: string
+    config: {
+        [key: string]: any
+    }
+}
 
-async function build(output: string, lang: string, mini: boolean) {
+async function build(params: Params) {
     const outputFiles: Array<string> = []
+    const outputEnv = {
+        ...params.config,
+        env: params.env,
+        lang: params.lang
+    }
     // 複製靜態檔案
-    fsx.copySync('./static', output + '/static', {
+    fsx.copySync(staticDir, params.outputDir + '/static', {
         filter: (src, dest) => {
             outputFiles.push(dest)
             return true
         }
     })
     // 複製頁面
-    fsx.copySync('./pages', output, {
+    fsx.copySync(pageDir, params.outputDir, {
         filter: (src, dest) => {
             outputFiles.push(dest)
             return true
@@ -35,11 +50,24 @@ async function build(output: string, lang: string, mini: boolean) {
         if (data.ext === '.html') {
             console.log(`正在編譯HTML: ${data.name}${data.ext}`)
             let html = fsx.readFileSync(file).toString()
-            let output = compile(file, html, {
-                env: 'prod',
-                lang
-            })
-            if (mini) {
+            if (params.env === 'dev') {
+                html += /* html */`
+                    <script>
+                        setInterval(() => {
+                            let oReq = new XMLHttpRequest()
+                                oReq.addEventListener('load', (data) => {
+                                    if (JSON.parse(oReq.response).result) {
+                                        location.reload()
+                                    }
+                                })
+                                oReq.open('POST', '/onchange')
+                                oReq.send()
+                        }, 1500)
+                    </script>
+                `
+            }
+            let output = compile(file, html, outputEnv)
+            if (params.mini) {
                 fsx.writeFileSync(file, htmlMinifier.minify(output, {
                     minifyJS: true,
                     minifyCSS: true,
@@ -89,7 +117,7 @@ async function build(output: string, lang: string, mini: boolean) {
             //         }
             //     })
             // })
-            if (mini) {
+            if (params.mini) {
                 fsx.writeFileSync(file, (await minify(output)).code)
             } else {
                 fsx.writeFileSync(file, output)
@@ -103,13 +131,13 @@ async function build(output: string, lang: string, mini: boolean) {
                     overrideBrowserslist: ['last 2 version', '> 1%', 'IE 10']
                 })
             ])
-            let css = fsx.readFileSync(file).toString()
+            let css = compileCss(fsx.readFileSync(file).toString(), outputEnv)
             let output = css
             let result = await post.process(css, { from: undefined })
             if (result.css) {
                 output = result.css
             }
-            if (mini) {
+            if (params.mini) {
                 fsx.writeFileSync(file, (new CleanCss().minify(output).styles))
             } else {
                 fsx.writeFileSync(file, output)
@@ -118,20 +146,22 @@ async function build(output: string, lang: string, mini: boolean) {
     }
 }
 
-export default async function(mainLang: string, outputDir: string, mini: boolean) {
+export default async function(params: Params) {
     // 刪除所有編譯過後的檔案
-    if (fsx.existsSync(outputDir)) {
-        fsx.removeSync(outputDir)
+    if (fsx.existsSync(params.outputDir)) {
+        fsx.removeSync(params.outputDir)
     }
     // 獲取所有語系檔案
-    let langs = fsx.readdirSync('./locales').map(s => s.replace('.json', ''))
+    let langs = fsx.readdirSync(localDir).map(s => s.replace('.json', ''))
     for (let lang of langs) {
-        if (lang === mainLang) {
-            await build(outputDir, lang, mini)
+        if (lang === params.lang) {
+            await build(params)
         } else {
-            await build(`${outputDir}/${lang}`, lang, mini)
+            await build({
+                ...params,
+                outputDir: `${params.outputDir}/${lang}`
+            })
         }
     }
-    console.log('Build done.')
-    process.exit()
+    console.log('Build Success.')
 }

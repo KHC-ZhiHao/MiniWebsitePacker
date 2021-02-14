@@ -7,11 +7,13 @@ import build from './build'
 
 program.version('0.0.2')
 program.arguments('<mode> [name]')
-program.option('--mini', 'Minify Code.')
-program.option('--lang <target>', 'Main Language, default is zh.', 'zh')
-program.option('--port <target>', 'Select Language, default is 8080.', '8080')
-program.option('--host <target>', 'Select Language, default is localhost.', 'localhost')
+program.option('--mini', 'Minify code.')
+program.option('--conf <target>', 'Select Config File.', '')
+program.option('--lang <target>', 'Main language, default is zh.', 'zh')
+program.option('--port <target>', 'Service prot, default is 8080.', '8080')
+program.option('--host <target>', 'Service host, default is localhost.', 'localhost')
 program.action((mode, name = 'my-project') => {
+    let outputDir = './dist'
     let lang: string = program.lang
     let host: string = program.host
     let port: number = Number(program.port)
@@ -21,13 +23,25 @@ program.action((mode, name = 'my-project') => {
         process.exit()
     }
     if (mode === 'build') {
-        build(lang, './dist', !!program.mini)
+        let conf = {}
+        if (program.conf) {
+            conf = JSON.parse(fsx.readFileSync(program.conf).toString())
+        }
+        build({
+            config: conf,
+            env: 'prod',
+            lang,
+            mini: !!program.mini,
+            outputDir
+        })
     }
     if (mode === 'serve') {
         server({
             port,
             host,
-            lang
+            lang,
+            confPath: program.conf,
+            outputDir
         })
     }
 })

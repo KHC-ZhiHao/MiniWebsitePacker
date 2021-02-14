@@ -3,21 +3,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.compile = void 0;
+exports.compile = exports.compileCss = void 0;
 const fs_extra_1 = __importDefault(require("fs-extra"));
-const localDir = './locales';
-const templateDir = './templates';
+const dir_1 = require("./dir");
+function compileCss(css, params) {
+    return randerEnv(css, params);
+}
+exports.compileCss = compileCss;
 function compile(file, html, params) {
-    let templates = fs_extra_1.default.readdirSync(templateDir).map(file => {
+    let templates = fs_extra_1.default.readdirSync(dir_1.templateDir).map(file => {
         return {
             name: file.replace('.html', ''),
-            content: fs_extra_1.default.readFileSync(`${templateDir}/${file}`).toString()
+            content: fs_extra_1.default.readFileSync(`${dir_1.templateDir}/${file}`).toString()
         };
     });
     // 處理模板與變數
     html = randerTemplate(file, html, templates, params);
     // 處理語系
-    let locale = JSON.parse(fs_extra_1.default.readFileSync(`${localDir}/${params.lang}.json`).toString());
+    let locale = JSON.parse(fs_extra_1.default.readFileSync(`${dir_1.localDir}/${params.lang}.json`).toString());
     for (let key in locale) {
         html = html.replace(`{${key}}`, locale[key]);
     }
@@ -53,7 +56,11 @@ function parseSlot(name, html) {
     };
 }
 function randerEnv(html, params) {
-    return html.replace(/\$\{lang\}/, params.lang).replace(/\$\{env\}/, params.env);
+    for (let key in params) {
+        let reg = new RegExp(`\-\-${key}`, 'g');
+        html = html.replace(reg, params[key]);
+    }
+    return html;
 }
 function randerTemplate(file, html, templates, params) {
     // 清除系統註解
@@ -69,10 +76,11 @@ function randerTemplate(file, html, templates, params) {
             matched = true;
             for (let match of matchs) {
                 let solt = parseSlot(name, match);
+                let text = content.toString();
                 for (let key in solt.props) {
-                    content = content.replace(new RegExp(`:${key}:`, 'g'), solt.props[key]);
+                    text = text.replace(new RegExp(`:${key}:`, 'g'), solt.props[key]);
                 }
-                let template = content.replace(/<slot><\/slot>/g, solt.text);
+                let template = text.replace(/<slot><\/slot>/g, solt.text);
                 output = output.replace(match, template);
             }
         }

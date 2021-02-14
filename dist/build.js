@@ -24,18 +24,20 @@ const html_minifier_1 = __importDefault(require("html-minifier"));
 const clean_css_1 = __importDefault(require("clean-css"));
 const terser_1 = require("terser");
 const reader_1 = require("./reader");
-function build(output, lang, mini) {
+const dir_1 = require("./dir");
+function build(params) {
     return __awaiter(this, void 0, void 0, function* () {
         const outputFiles = [];
+        const outputEnv = Object.assign(Object.assign({}, params.config), { env: params.env, lang: params.lang });
         // 複製靜態檔案
-        fs_extra_1.default.copySync('./static', output + '/static', {
+        fs_extra_1.default.copySync(dir_1.staticDir, params.outputDir + '/static', {
             filter: (src, dest) => {
                 outputFiles.push(dest);
                 return true;
             }
         });
         // 複製頁面
-        fs_extra_1.default.copySync('./pages', output, {
+        fs_extra_1.default.copySync(dir_1.pageDir, params.outputDir, {
             filter: (src, dest) => {
                 outputFiles.push(dest);
                 return true;
@@ -48,11 +50,24 @@ function build(output, lang, mini) {
             if (data.ext === '.html') {
                 console.log(`正在編譯HTML: ${data.name}${data.ext}`);
                 let html = fs_extra_1.default.readFileSync(file).toString();
-                let output = reader_1.compile(file, html, {
-                    env: 'prod',
-                    lang
-                });
-                if (mini) {
+                if (params.env === 'dev') {
+                    html += /* html */ `
+                    <script>
+                        setInterval(() => {
+                            let oReq = new XMLHttpRequest()
+                                oReq.addEventListener('load', (data) => {
+                                    if (JSON.parse(oReq.response).result) {
+                                        location.reload()
+                                    }
+                                })
+                                oReq.open('POST', '/onchange')
+                                oReq.send()
+                        }, 1500)
+                    </script>
+                `;
+                }
+                let output = reader_1.compile(file, html, outputEnv);
+                if (params.mini) {
                     fs_extra_1.default.writeFileSync(file, html_minifier_1.default.minify(output, {
                         minifyJS: true,
                         minifyCSS: true,
@@ -103,7 +118,7 @@ function build(output, lang, mini) {
                 //         }
                 //     })
                 // })
-                if (mini) {
+                if (params.mini) {
                     fs_extra_1.default.writeFileSync(file, (yield terser_1.minify(output)).code);
                 }
                 else {
@@ -118,13 +133,13 @@ function build(output, lang, mini) {
                         overrideBrowserslist: ['last 2 version', '> 1%', 'IE 10']
                     })
                 ]);
-                let css = fs_extra_1.default.readFileSync(file).toString();
+                let css = reader_1.compileCss(fs_extra_1.default.readFileSync(file).toString(), outputEnv);
                 let output = css;
                 let result = yield post.process(css, { from: undefined });
                 if (result.css) {
                     output = result.css;
                 }
-                if (mini) {
+                if (params.mini) {
                     fs_extra_1.default.writeFileSync(file, (new clean_css_1.default().minify(output).styles));
                 }
                 else {
@@ -134,24 +149,23 @@ function build(output, lang, mini) {
         }
     });
 }
-function default_1(mainLang, outputDir, mini) {
+function default_1(params) {
     return __awaiter(this, void 0, void 0, function* () {
         // 刪除所有編譯過後的檔案
-        if (fs_extra_1.default.existsSync(outputDir)) {
-            fs_extra_1.default.removeSync(outputDir);
+        if (fs_extra_1.default.existsSync(params.outputDir)) {
+            fs_extra_1.default.removeSync(params.outputDir);
         }
         // 獲取所有語系檔案
-        let langs = fs_extra_1.default.readdirSync('./locales').map(s => s.replace('.json', ''));
+        let langs = fs_extra_1.default.readdirSync(dir_1.localDir).map(s => s.replace('.json', ''));
         for (let lang of langs) {
-            if (lang === mainLang) {
-                yield build(outputDir, lang, mini);
+            if (lang === params.lang) {
+                yield build(params);
             }
             else {
-                yield build(`${outputDir}/${lang}`, lang, mini);
+                yield build(Object.assign(Object.assign({}, params), { outputDir: `${params.outputDir}/${lang}` }));
             }
         }
-        console.log('Build done.');
-        process.exit();
+        console.log('Build Success.');
     });
 }
 exports.default = default_1;

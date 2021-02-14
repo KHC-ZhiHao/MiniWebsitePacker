@@ -1,11 +1,14 @@
 import fsx from 'fs-extra'
-
-const localDir = './locales'
-const templateDir = './templates'
+import { templateDir, localDir } from './dir'
 
 type EnvParams = {
+    [key: string]: any
     env: string
     lang: string
+}
+
+export function compileCss(css: string, params: EnvParams) {
+    return randerEnv(css, params)
 }
 
 export function compile(file: string, html: string, params: EnvParams): string {
@@ -56,7 +59,11 @@ function parseSlot(name: string, html: string) {
 }
 
 function randerEnv(html: string, params: EnvParams) {
-    return html.replace(/\$\{lang\}/, params.lang).replace(/\$\{env\}/, params.env)
+    for (let key in params) {
+        let reg = new RegExp(`\-\-${key}`, 'g')
+        html = html.replace(reg, params[key])
+    }
+    return html
 }
 
 function randerTemplate(file: string, html: string, templates: Array<{ name: string, content: string }>, params: EnvParams) {
@@ -73,10 +80,11 @@ function randerTemplate(file: string, html: string, templates: Array<{ name: str
             matched = true
             for (let match of matchs) {
                 let solt = parseSlot(name, match)
+                let text = content.toString()
                 for (let key in solt.props) {
-                    content = content.replace(new RegExp(`:${key}:`, 'g'), solt.props[key])
+                    text = text.replace(new RegExp(`:${key}:`, 'g'), solt.props[key])
                 }
-                let template = content.replace(/<slot><\/slot>/g, solt.text)
+                let template = text.replace(/<slot><\/slot>/g, solt.text)
                 output = output.replace(match, template)
             }
         }
