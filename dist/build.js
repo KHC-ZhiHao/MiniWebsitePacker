@@ -80,7 +80,7 @@ function build(params) {
                     });
                 }
                 if (params.readonly) {
-                    let id = 'key--' + Buffer.from(Date.now().toString()).toString('base64');
+                    let id = Buffer.from(Date.now().toString()).toString('base64');
                     let base64 = Buffer.from(output, 'utf8').toString('base64');
                     let doc = `
                     (function() {
