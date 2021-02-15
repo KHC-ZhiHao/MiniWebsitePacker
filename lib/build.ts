@@ -180,24 +180,23 @@ async function build(params: Params) {
         // js
         if (data.ext === '.js') {
             console.log(`正在編譯JS: ${data.name}${data.ext}`)
-            // let babel = require('@babel/core')
+            let babel = require('@babel/core')
             let code = fsx.readFileSync(file).toString()
-            let output = code
-            // let output: string = await new Promise((resolve, reject) => {
-            //     babel.transform(code, {
-            //         presets: [
-            //             [
-            //                 '@babel/preset-env'
-            //             ]
-            //         ]
-            //     }, (err, result) => {
-            //         if (err) {
-            //             reject(err)
-            //         } else {
-            //             resolve(result.code)
-            //         }
-            //     })
-            // })
+            let output: string = await new Promise((resolve, reject) => {
+                babel.transform(code, {
+                    presets: [
+                        [
+                            '@babel/preset-env'
+                        ]
+                    ]
+                }, (err, result) => {
+                    if (err) {
+                        reject(err)
+                    } else {
+                        resolve(result.code)
+                    }
+                })
+            })
             if (params.mini) {
                 fsx.writeFileSync(file, (await minify(output)).code)
             } else {
