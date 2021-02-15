@@ -30,6 +30,7 @@ function default_1(props) {
         yield build_1.default({
             config,
             env: 'dev',
+            readonly: false,
             lang: props.lang,
             mini: false,
             outputDir: props.outputDir

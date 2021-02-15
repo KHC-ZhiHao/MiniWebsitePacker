@@ -2,7 +2,8 @@
   "name": "my-project",
   "scripts": {
     "serve": "mini-website-packer serve --conf ./src/config.json --lang zh",
-    "build": "mini-website-packer build --conf ./src/config.json --mini"
+    "build": "mini-website-packer build --conf ./src/config.json --mini",
+    "build-readonly": "mini-website-packer build --conf ./src/config.json --mini --readonly"
   },
   "devDependencies": {
     "@babel/core": "^7.12.13",

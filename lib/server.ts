@@ -15,7 +15,6 @@ type Props = {
 }
 
 export default function(props: Props) {
-
     const app = express()
     const server = new Server(app)
     const buildFile = async() => {
@@ -26,6 +25,7 @@ export default function(props: Props) {
         await build({
             config,
             env: 'dev',
+            readonly: false,
             lang: props.lang,
             mini: false,
             outputDir: props.outputDir

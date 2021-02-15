@@ -11,6 +11,7 @@ const build_1 = __importDefault(require("./build"));
 commander_1.default.version('0.0.2');
 commander_1.default.arguments('<mode> [name]');
 commander_1.default.option('--mini', 'Minify code.');
+commander_1.default.option('--readonly', 'Enable readonly mode.');
 commander_1.default.option('--conf <target>', 'Select Config File.', '');
 commander_1.default.option('--lang <target>', 'Main language, default is zh.', 'zh');
 commander_1.default.option('--port <target>', 'Service prot, default is 8080.', '8080');
@@ -20,6 +21,7 @@ commander_1.default.action((mode, name = 'my-project') => {
     let lang = commander_1.default.lang;
     let host = commander_1.default.host;
     let port = Number(commander_1.default.port);
+    let readonly = !!commander_1.default.readonly;
     if (mode === 'init') {
         fs_extra_1.default.copySync(`${__dirname}/../example`, `./${name}`);
         console.log('Inited');
@@ -34,6 +36,7 @@ commander_1.default.action((mode, name = 'my-project') => {
             config: conf,
             env: 'prod',
             lang,
+            readonly,
             mini: !!commander_1.default.mini,
             outputDir
         });

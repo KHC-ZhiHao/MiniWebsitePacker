@@ -40,11 +40,6 @@ function clearComment(file, text) {
 }
 function parseSlot(name, html) {
     let text = html.replace(new RegExp(`<t-${name}.*?>|<\/t-${name}>`, 'gs'), '');
-    let id = {
-        key: '',
-        tag: '',
-        value: ''
-    };
     let props = {};
     let propsText = html.match(new RegExp(`<t-${name}.*?>`, 'gs'));
     if (propsText && propsText[0]) {
@@ -52,18 +47,10 @@ function parseSlot(name, html) {
         for (let i = 0; i < attrs.length; i++) {
             let text = attrs[i];
             let [key, value] = text.split('=');
-            if (key[0] !== '#') {
-                props[key] = value.slice(1, -1);
-            }
-            else {
-                id.key = key;
-                id.tag = value.slice(1, -1);
-                id.value = 'sys-' + Math.floor(Math.random() * 10000);
-            }
+            props[key] = value.slice(1, -1);
         }
     }
     return {
-        id,
         text,
         props
     };
@@ -90,21 +77,11 @@ function randerTemplate(file, html, templates, params) {
             for (let match of matchs) {
                 let solt = parseSlot(name, match);
                 let text = content.toString();
-                console.log(solt);
                 for (let key in solt.props) {
                     text = text.replace(new RegExp(`:${key}:`, 'g'), solt.props[key]);
                 }
-                if (solt.id.key) {
-                    console.log(text);
-                    text = text.replace(new RegExp(`#${solt.id.key}`, 'g'), solt.id.value);
-                }
                 let template = text.replace(/<slot><\/slot>/g, solt.text);
-                if (solt.id.tag) {
-                    output = output.replace(match, `<${solt.id.tag} id="${solt.id.value}">${template}</${solt.id.tag}>`);
-                }
-                else {
-                    output = output.replace(match, template);
-                }
+                output = output.replace(match, template);
             }
         }
     }

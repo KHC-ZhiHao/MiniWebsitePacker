@@ -8,6 +8,7 @@ import build from './build'
 program.version('0.0.2')
 program.arguments('<mode> [name]')
 program.option('--mini', 'Minify code.')
+program.option('--readonly', 'Enable readonly mode.')
 program.option('--conf <target>', 'Select Config File.', '')
 program.option('--lang <target>', 'Main language, default is zh.', 'zh')
 program.option('--port <target>', 'Service prot, default is 8080.', '8080')
@@ -17,6 +18,7 @@ program.action((mode, name = 'my-project') => {
     let lang: string = program.lang
     let host: string = program.host
     let port: number = Number(program.port)
+    let readonly = !!program.readonly
     if (mode === 'init') {
         fsx.copySync(`${__dirname}/../example`, `./${name}`)
         console.log('Inited')
@@ -31,6 +33,7 @@ program.action((mode, name = 'my-project') => {
             config: conf,
             env: 'prod',
             lang,
+            readonly,
             mini: !!program.mini,
             outputDir
         })
