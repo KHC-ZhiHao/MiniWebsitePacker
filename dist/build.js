@@ -180,24 +180,24 @@ function build(params) {
             // js
             if (data.ext === '.js') {
                 console.log(`正在編譯JS: ${data.name}${data.ext}`);
-                // let babel = require('@babel/core')
+                let babel = require('@babel/core');
                 let code = fs_extra_1.default.readFileSync(file).toString();
-                let output = code;
-                // let output: string = await new Promise((resolve, reject) => {
-                //     babel.transform(code, {
-                //         presets: [
-                //             [
-                //                 '@babel/preset-env'
-                //             ]
-                //         ]
-                //     }, (err, result) => {
-                //         if (err) {
-                //             reject(err)
-                //         } else {
-                //             resolve(result.code)
-                //         }
-                //     })
-                // })
+                let output = yield new Promise((resolve, reject) => {
+                    babel.transform(code, {
+                        presets: [
+                            [
+                                '@babel/preset-env'
+                            ]
+                        ]
+                    }, (err, result) => {
+                        if (err) {
+                            reject(err);
+                        }
+                        else {
+                            resolve(result.code);
+                        }
+                    });
+                });
                 if (params.mini) {
                     fs_extra_1.default.writeFileSync(file, (yield terser_1.minify(output)).code);
                 }
