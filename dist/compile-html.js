@@ -24,12 +24,12 @@ function clearComment(file, text) {
     let lines = text.split('\n');
     for (let i = 0; i < lines.length; i++) {
         let line = lines[i];
-        let warns = line.match(/<!--!.*!-->/g) || [];
+        let warns = line.match(/<!--!.*?!-->/g) || [];
         for (let warn of warns) {
             console.warn(`Comment ${file} (line: ${i + 1}): ${warn}`);
         }
     }
-    return text.replace(/<\!---.*--->/g, '').replace(/<!--!.*!-->/g, '');
+    return text.replace(/<\!---.*?--->/g, '').replace(/<!--!.*?!-->/g, '');
 }
 function randerVariables(html, variables) {
     for (let key in variables) {
@@ -51,9 +51,9 @@ function randerTemplate(html, templates) {
             for (let key in element.attribs) {
                 content = content.replace(new RegExp(`:${escape_string_regexp_1.default(key)}:`, 'g'), element.attribs[key]);
             }
-            let result = content.replace(/<slot>.*<\/slot>/g, getElementContent(element));
+            let result = content.replace(/<slot>.*?<\/slot>/g, getElementContent(element));
             let text = escape_string_regexp_1.default(element.name);
-            let reg = new RegExp(`<${text}.*?<\/${text}>`, 'gs');
+            let reg = new RegExp(`<${text}.*?<\/${text}>`, 's');
             output = output.replace(reg, result);
             matched = true;
         }
