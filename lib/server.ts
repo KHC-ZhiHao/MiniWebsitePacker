@@ -41,6 +41,8 @@ export default function(props: Props) {
         console.log('Building...')
         await buildFile()
         hasChange = true
+        let url = `http://${props.host}:${props.port}`
+        console.log(`Server正在運行中: ${url}`)
     })
 
     app.use(cors())
@@ -58,8 +60,7 @@ export default function(props: Props) {
     })
 
     server.listen(props.port, props.host, () => {
-        let url = `http://${props.host}:${props.port}`
-        console.log(`Server正在運行中: ${url}`)
+        console.log(`Server運行成功`)
     })
 
     return server

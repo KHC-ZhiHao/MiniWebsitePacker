@@ -44,6 +44,8 @@ function default_1(props) {
         console.log('Building...');
         yield buildFile();
         hasChange = true;
+        let url = `http://${props.host}:${props.port}`;
+        console.log(`Server正在運行中: ${url}`);
     }));
     app.use(cors_1.default());
     app.use(express_1.default.static(props.outputDir, {
@@ -58,8 +60,7 @@ function default_1(props) {
         }
     });
     server.listen(props.port, props.host, () => {
-        let url = `http://${props.host}:${props.port}`;
-        console.log(`Server正在運行中: ${url}`);
+        console.log(`Server運行成功`);
     });
     return server;
 }

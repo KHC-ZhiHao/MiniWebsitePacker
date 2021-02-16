@@ -1,17 +1,18 @@
 import fsx from 'fs-extra'
+import escapeStringRegexp from 'escape-string-regexp'
 import { templateDir, localDir } from './dir'
 
-type EnvParams = {
+type Variables = {
     [key: string]: any
     env: string
     lang: string
 }
 
-export function compileCss(css: string, params: EnvParams) {
-    return randerEnv(css, params)
+export function compileCss(css: string, variables: Variables) {
+    return randerEnv(css, variables)
 }
 
-export function compile(file: string, html: string, params: EnvParams): string {
+export function compile(file: string, html: string, variables: Variables): string {
     let templates = fsx.readdirSync(templateDir).map(file => {
         return {
             name: file.replace('.html', ''),
@@ -19,9 +20,9 @@ export function compile(file: string, html: string, params: EnvParams): string {
         }
     })
     // 處理模板與變數
-    html = randerTemplate(file, html, templates, params)
+    html = randerTemplate(file, html, templates, variables)
     // 處理語系
-    let locale = JSON.parse(fsx.readFileSync(`${localDir}/${params.lang}.json`).toString())
+    let locale = JSON.parse(fsx.readFileSync(`${localDir}/${variables.lang}.json`).toString())
     for (let key in locale) {
         html = html.replace(`{${key}}`, locale[key])
     }
@@ -41,9 +42,10 @@ function clearComment(file: string, text: string) {
 }
 
 function parseSlot(name: string, html: string) {
-    let text = html.replace(new RegExp(`<t-${name}.*?>|<\/t-${name}>`, 'gs'), '')
+    let reg = escapeStringRegexp(name)
+    let text = html.replace(new RegExp(`<t-${reg}.*?>|<\/t-${reg}>`, 'gs'), '')
     let props = {}
-    let propsText = html.match(new RegExp(`<t-${name}.*?>`, 'gs'))
+    let propsText = html.match(new RegExp(`<t-${reg}.*?>`, 'gs'))
     if (propsText && propsText[0]) {
         let attrs = (propsText[0].match(/\s.*?".*?"/gs) || []).filter(e => !!e).map(e => e.trim())
         for (let i = 0; i < attrs.length; i++) {
@@ -58,23 +60,25 @@ function parseSlot(name: string, html: string) {
     }
 }
 
-function randerEnv(html: string, params: EnvParams) {
-    for (let key in params) {
-        let reg = new RegExp(`\-\-${key}`, 'g')
-        html = html.replace(reg, params[key])
+function randerEnv(html: string, variables: Variables) {
+    for (let key in variables) {
+        let text = escapeStringRegexp(`--${key}`)
+        let reg = new RegExp(text, 'g')
+        html = html.replace(reg, variables[key])
     }
     return html
 }
 
-function randerTemplate(file: string, html: string, templates: Array<{ name: string, content: string }>, params: EnvParams) {
+function randerTemplate(file: string, html: string, templates: Array<{ name: string, content: string }>, variables: Variables) {
     // 清除系統註解
     html = clearComment(file, html)
     // 替換環境參數
-    html = randerEnv(html, params)
+    html = randerEnv(html, variables)
     let output = html
     let matched = false
     for (let { name, content } of templates) {
-        let reg = new RegExp(`<t-${name}.*?<\/t-${name}>`, 'gs')
+        let text = escapeStringRegexp(name)
+        let reg = new RegExp(`<t-${text}.*?<\/t-${text}>`, 'gs')
         let matchs = output.match(reg)
         if (matchs) {
             matched = true
@@ -82,7 +86,7 @@ function randerTemplate(file: string, html: string, templates: Array<{ name: str
                 let solt = parseSlot(name, match)
                 let text = content.toString()
                 for (let key in solt.props) {
-                    text = text.replace(new RegExp(`:${key}:`, 'g'), solt.props[key])
+                    text = text.replace(new RegExp(`:${escapeStringRegexp(key)}:`, 'g'), solt.props[key])
                 }
                 let template = text.replace(/<slot><\/slot>/g, solt.text)
                 output = output.replace(match, template)
@@ -90,7 +94,7 @@ function randerTemplate(file: string, html: string, templates: Array<{ name: str
         }
     }
     if (matched) {
-        output = randerTemplate(file, output, templates, params)
+        output = randerTemplate(file, output, templates, variables)
     }
     return output
 }

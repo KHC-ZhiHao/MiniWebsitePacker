@@ -25,8 +25,8 @@ type Params = {
 
 async function build(params: Params) {
     const outputFiles: Array<string> = []
-    const outputEnv = {
-        ...params.config,
+    const variables = {
+        ...params.config.variables || {},
         env: params.env,
         lang: params.lang
     }
@@ -67,7 +67,7 @@ async function build(params: Params) {
                     </script>
                 `
             } 
-            let output = compile(file, html, outputEnv)
+            let output = compile(file, html, variables)
             if (params.mini) {
                 output = htmlMinifier.minify(output, {
                     minifyJS: true,
@@ -211,7 +211,7 @@ async function build(params: Params) {
                     overrideBrowserslist: ['last 2 version', '> 1%', 'IE 10']
                 })
             ])
-            let css = compileCss(fsx.readFileSync(file).toString(), outputEnv)
+            let css = compileCss(fsx.readFileSync(file).toString(), variables)
             let output = css
             let result = await post.process(css, { from: undefined })
             if (result.css) {

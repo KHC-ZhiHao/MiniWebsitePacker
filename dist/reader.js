@@ -5,12 +5,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.compile = exports.compileCss = void 0;
 const fs_extra_1 = __importDefault(require("fs-extra"));
+const escape_string_regexp_1 = __importDefault(require("escape-string-regexp"));
 const dir_1 = require("./dir");
-function compileCss(css, params) {
-    return randerEnv(css, params);
+function compileCss(css, variables) {
+    return randerEnv(css, variables);
 }
 exports.compileCss = compileCss;
-function compile(file, html, params) {
+function compile(file, html, variables) {
     let templates = fs_extra_1.default.readdirSync(dir_1.templateDir).map(file => {
         return {
             name: file.replace('.html', ''),
@@ -18,9 +19,9 @@ function compile(file, html, params) {
         };
     });
     // 處理模板與變數
-    html = randerTemplate(file, html, templates, params);
+    html = randerTemplate(file, html, templates, variables);
     // 處理語系
-    let locale = JSON.parse(fs_extra_1.default.readFileSync(`${dir_1.localDir}/${params.lang}.json`).toString());
+    let locale = JSON.parse(fs_extra_1.default.readFileSync(`${dir_1.localDir}/${variables.lang}.json`).toString());
     for (let key in locale) {
         html = html.replace(`{${key}}`, locale[key]);
     }
@@ -39,9 +40,10 @@ function clearComment(file, text) {
     return text.replace(/<\!---.*--->/g, '').replace(/<!--!.*!-->/g, '');
 }
 function parseSlot(name, html) {
-    let text = html.replace(new RegExp(`<t-${name}.*?>|<\/t-${name}>`, 'gs'), '');
+    let reg = escape_string_regexp_1.default(name);
+    let text = html.replace(new RegExp(`<t-${reg}.*?>|<\/t-${reg}>`, 'gs'), '');
     let props = {};
-    let propsText = html.match(new RegExp(`<t-${name}.*?>`, 'gs'));
+    let propsText = html.match(new RegExp(`<t-${reg}.*?>`, 'gs'));
     if (propsText && propsText[0]) {
         let attrs = (propsText[0].match(/\s.*?".*?"/gs) || []).filter(e => !!e).map(e => e.trim());
         for (let i = 0; i < attrs.length; i++) {
@@ -55,22 +57,24 @@ function parseSlot(name, html) {
         props
     };
 }
-function randerEnv(html, params) {
-    for (let key in params) {
-        let reg = new RegExp(`\-\-${key}`, 'g');
-        html = html.replace(reg, params[key]);
+function randerEnv(html, variables) {
+    for (let key in variables) {
+        let text = escape_string_regexp_1.default(`--${key}`);
+        let reg = new RegExp(text, 'g');
+        html = html.replace(reg, variables[key]);
     }
     return html;
 }
-function randerTemplate(file, html, templates, params) {
+function randerTemplate(file, html, templates, variables) {
     // 清除系統註解
     html = clearComment(file, html);
     // 替換環境參數
-    html = randerEnv(html, params);
+    html = randerEnv(html, variables);
     let output = html;
     let matched = false;
     for (let { name, content } of templates) {
-        let reg = new RegExp(`<t-${name}.*?<\/t-${name}>`, 'gs');
+        let text = escape_string_regexp_1.default(name);
+        let reg = new RegExp(`<t-${text}.*?<\/t-${text}>`, 'gs');
         let matchs = output.match(reg);
         if (matchs) {
             matched = true;
@@ -78,7 +82,7 @@ function randerTemplate(file, html, templates, params) {
                 let solt = parseSlot(name, match);
                 let text = content.toString();
                 for (let key in solt.props) {
-                    text = text.replace(new RegExp(`:${key}:`, 'g'), solt.props[key]);
+                    text = text.replace(new RegExp(`:${escape_string_regexp_1.default(key)}:`, 'g'), solt.props[key]);
                 }
                 let template = text.replace(/<slot><\/slot>/g, solt.text);
                 output = output.replace(match, template);
@@ -86,7 +90,7 @@ function randerTemplate(file, html, templates, params) {
         }
     }
     if (matched) {
-        output = randerTemplate(file, output, templates, params);
+        output = randerTemplate(file, output, templates, variables);
     }
     return output;
 }

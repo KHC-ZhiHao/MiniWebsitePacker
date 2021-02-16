@@ -28,7 +28,7 @@ const dir_1 = require("./dir");
 function build(params) {
     return __awaiter(this, void 0, void 0, function* () {
         const outputFiles = [];
-        const outputEnv = Object.assign(Object.assign({}, params.config), { env: params.env, lang: params.lang });
+        const variables = Object.assign(Object.assign({}, params.config.variables || {}), { env: params.env, lang: params.lang });
         // 複製靜態檔案
         fs_extra_1.default.copySync(dir_1.staticDir, params.outputDir + '/static', {
             filter: (src, dest) => {
@@ -66,7 +66,7 @@ function build(params) {
                     </script>
                 `;
                 }
-                let output = reader_1.compile(file, html, outputEnv);
+                let output = reader_1.compile(file, html, variables);
                 if (params.mini) {
                     output = html_minifier_1.default.minify(output, {
                         minifyJS: true,
@@ -213,7 +213,7 @@ function build(params) {
                         overrideBrowserslist: ['last 2 version', '> 1%', 'IE 10']
                     })
                 ]);
-                let css = reader_1.compileCss(fs_extra_1.default.readFileSync(file).toString(), outputEnv);
+                let css = reader_1.compileCss(fs_extra_1.default.readFileSync(file).toString(), variables);
                 let output = css;
                 let result = yield post.process(css, { from: undefined });
                 if (result.css) {

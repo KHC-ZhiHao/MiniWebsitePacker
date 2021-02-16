@@ -1,3 +1,5 @@
 {
-    "primary": "blue"
+    "variables": {
+        "primary": "blue"
+    }
 }
