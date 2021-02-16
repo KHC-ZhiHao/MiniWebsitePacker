@@ -59,7 +59,7 @@ function parseSlot(name, html) {
 }
 function randerEnv(html, variables) {
     for (let key in variables) {
-        let text = escape_string_regexp_1.default(`--${key}`);
+        let text = escape_string_regexp_1.default(`--${key}--`);
         let reg = new RegExp(text, 'g');
         html = html.replace(reg, variables[key]);
     }
