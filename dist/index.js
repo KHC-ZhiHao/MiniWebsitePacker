@@ -17,6 +17,7 @@ commander_1.default.option('--lang <target>', 'Main language, default is zh.', '
 commander_1.default.option('--port <target>', 'Service prot, default is 8080.', '8080');
 commander_1.default.option('--host <target>', 'Service host, default is localhost.', 'localhost');
 commander_1.default.action((mode, name = 'my-project') => {
+    let rootDir = './src';
     let outputDir = './dist';
     let lang = commander_1.default.lang;
     let host = commander_1.default.host;
@@ -38,6 +39,7 @@ commander_1.default.action((mode, name = 'my-project') => {
             lang,
             readonly,
             mini: !!commander_1.default.mini,
+            rootDir,
             outputDir
         });
     }
@@ -47,6 +49,7 @@ commander_1.default.action((mode, name = 'my-project') => {
             host,
             lang,
             confPath: commander_1.default.conf,
+            rootDir,
             outputDir
         });
     }

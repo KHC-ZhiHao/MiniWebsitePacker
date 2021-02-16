@@ -19,20 +19,21 @@ const imagemin_jpegtran_1 = __importDefault(require("imagemin-jpegtran"));
 const imagemin_pngquant_1 = __importDefault(require("imagemin-pngquant"));
 const compile_html_1 = require("./compile-html");
 const compile_1 = require("./compile");
-const config_1 = require("./config");
+const utils_1 = require("./utils");
 function build(params) {
     return __awaiter(this, void 0, void 0, function* () {
         const outputFiles = [];
         const variables = Object.assign(Object.assign({}, params.config.variables || {}), { env: params.env, lang: params.lang });
+        const { staticDir, pageDir } = utils_1.getDir(params.rootDir);
         // 複製靜態檔案
-        fs_extra_1.default.copySync(config_1.staticDir, params.outputDir + '/static', {
+        fs_extra_1.default.copySync(staticDir, params.outputDir + '/static', {
             filter: (src, dest) => {
                 outputFiles.push(dest);
                 return true;
             }
         });
         // 複製頁面
-        fs_extra_1.default.copySync(config_1.pageDir, params.outputDir, {
+        fs_extra_1.default.copySync(pageDir, params.outputDir, {
             filter: (src, dest) => {
                 outputFiles.push(dest);
                 return true;
@@ -48,6 +49,7 @@ function build(params) {
                 let output = yield compile_html_1.compileHTML(html, {
                     file,
                     mini: params.mini,
+                    rootDir: params.rootDir,
                     readonly: params.readonly,
                     hotReload: params.env === 'dev',
                     variables
@@ -97,7 +99,8 @@ function default_1(params) {
             fs_extra_1.default.removeSync(params.outputDir);
         }
         // 獲取所有語系檔案
-        let langs = fs_extra_1.default.readdirSync(config_1.localDir).map(s => s.replace('.json', ''));
+        let localDir = utils_1.getDir(params.rootDir).localDir;
+        let langs = fs_extra_1.default.readdirSync(localDir).map(s => s.replace('.json', ''));
         for (let lang of langs) {
             if (lang === params.lang) {
                 yield build(params);

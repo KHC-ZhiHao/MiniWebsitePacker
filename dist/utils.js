@@ -1,6 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.htmlEncryption = exports.htmlHotreload = void 0;
+exports.htmlEncryption = exports.htmlHotreload = exports.getDir = void 0;
+exports.getDir = (root) => {
+    return {
+        rootDir: root,
+        localDir: `${root}/locales`,
+        templateDir: `${root}/templates`,
+        pageDir: `${root}/pages`,
+        staticDir: `${root}/static`
+    };
+};
 exports.htmlHotreload = (html) => {
     return html + `
         <script>
