@@ -4,7 +4,7 @@ import watch from 'watch'
 import build from './build'
 import express from 'express'
 import { Server } from 'http'
-import { rootDir } from './dir'
+import { rootDir } from './config'
 
 type Props = {
     port: number

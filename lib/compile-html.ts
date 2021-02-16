@@ -1,10 +1,11 @@
 import fsx from 'fs-extra'
 import pretty from 'pretty'
-import cheerio from 'cheerio'
+import * as cheerio from 'cheerio'
 import htmlMinifier from 'html-minifier'
 import escapeStringRegexp from 'escape-string-regexp'
 import { htmlHotreload, htmlEncryption } from './utils'
-import { templateDir, localDir } from './dir'
+import { compileCss, compileJs } from './compile'
+import { templateDir, localDir } from './config'
 
 function clearComment(file: string, text: string) {
     let lines = text.split('\n')
@@ -18,25 +19,6 @@ function clearComment(file: string, text: string) {
     return text.replace(/<\!---.*--->/g, '').replace(/<!--!.*!-->/g, '')
 }
 
-function parseSlot(name: string, html: string) {
-    let reg = escapeStringRegexp(name)
-    let text = html.replace(new RegExp(`<t-${reg}.*?>|<\/t-${reg}>`, 'gs'), '')
-    let props = {}
-    let propsText = html.match(new RegExp(`<t-${reg}.*?>`, 'gs'))
-    if (propsText && propsText[0]) {
-        let attrs = (propsText[0].match(/\s.*?".*?"/gs) || []).filter(e => !!e).map(e => e.trim())
-        for (let i = 0; i < attrs.length; i++) {
-            let text = attrs[i]
-            let [key, value] = text.split('=')
-            props[key] = value.slice(1, -1)
-        }
-    }
-    return {
-        text,
-        props
-    }
-}
-
 function randerVariables(html: string, variables: { [key: string]: any }) {
     for (let key in variables) {
         let text = escapeStringRegexp(`--${key}--`)
@@ -46,36 +28,32 @@ function randerVariables(html: string, variables: { [key: string]: any }) {
     return html
 }
 
-type RanderTemplates = Array<{
+type Templates = Array<{
     name: string
     content: string
 }>
 
-function randerTemplate(html: string, templates: RanderTemplates) {
+function randerTemplate(html: string, templates: Templates) {
     let matched = false 
     let output = html.toString()
     // 渲染模板
-    for (let { name, content } of templates) {
-        let text = escapeStringRegexp(name)
-        let reg = new RegExp(`<t-${text}.*?<\/t-${text}>`, 'gs')
-        let matchs = output.match(reg)
-        if (matchs) {
-            matched = true
-            for (let match of matchs) {
-                let solt = parseSlot(name, match)
-                let text = content.toString()
-                for (let key in solt.props) {
-                    text = text.replace(new RegExp(`:${escapeStringRegexp(key)}:`, 'g'), solt.props[key])
-                }
-                let template = text.replace(/<slot><\/slot>/g, solt.text)
-                output = output.replace(match, template)
+    let $ = cheerio.load(output)
+    $('*').each((index, element: cheerio.TagElement) => {
+        let template = templates.find(e => e.name === element.name)
+        if (template) {
+            let content = template.content.toString()
+            for (let key in element.attribs) {
+                content = content.replace(new RegExp(`:${escapeStringRegexp(key)}:`, 'g'), element.attribs[key])
             }
+            let result = content.replace(/<slot>.*<\/slot>/g, getElementContent(element))
+            $(element).replaceWith(result)
+            matched = true
         }
-    }
+    })
     if (matched) {
-        output = randerTemplate(html, templates)
+        output = randerTemplate($.html(), templates)
     }
-    return output
+    return $.html()
 }
 
 type compileHTMLParams = {
@@ -90,13 +68,35 @@ type compileHTMLParams = {
     }
 }
 
-export function compileHTML(html: string, params: compileHTMLParams): string {
+function getElementContent(element: cheerio.TagElement) {
+    return element.children.map(e => e.data).join('\n')
+}
+
+function getNodes(io: cheerio.Cheerio):cheerio.TagElement[]  {
+    let nodes = []
+    io.each((i, e) => nodes.push(e))
+    return nodes
+}
+
+export async function compileHTML(html: string, params: compileHTMLParams): Promise<string> {
     let output = html.toString()
-    let templates = fsx.readdirSync(templateDir).map(file => {
-        return {
-            name: file.replace('.html', ''),
-            content: fsx.readFileSync(`${templateDir}/${file}`).toString()
+    let templates: Templates = []
+    fsx.readdirSync(templateDir).map(file => {
+        let name = 't-' + file.replace('.html', '')
+        let content = fsx.readFileSync(`${templateDir}/${file}`).toString()
+        let $ = cheerio.load(content)
+        let temps = getNodes($('temp'))
+        for (let temp of temps) {
+            templates.push({
+                name: `${name}.${temp.attribs.name}`,
+                content: getElementContent(temp)
+            })
+            $(temp).replaceWith('')
         }
+        templates.push({
+            name,
+            content: $.html()
+        })
     })
     // 處理模板與變數
     output = randerTemplate(output, templates)
@@ -108,9 +108,31 @@ export function compileHTML(html: string, params: compileHTMLParams): string {
     // 清除系統註解、替換環境參數
     output = clearComment(params.file, output)
     output = randerVariables(output, params.variables)
-    // 解讀 css 與 js
+    // 解讀 js
     let $ = cheerio.load(output)
-    $('script').text()
+    let scripts = getNodes($('script'))
+    for (let script of scripts) {
+        let content = getElementContent(script)
+        if (content.trim()) {
+            let result = await compileJs(content, {
+                mini: params.mini
+            })
+            $(script).replaceWith(`<script>${result}</script>`)
+        }
+    }
+    // 解讀 css
+    let styles = getNodes($('style'))
+    for (let style of styles) {
+        let content = getElementContent(style)
+        if (content.trim()) {
+            let result = await compileCss(content, {
+                mini: params.mini,
+                variables: params.variables
+            })
+            $(style).replaceWith(`<style>${result}</style>`)
+        }
+    }
+    output = $.html()
     // minify
     if (params.mini) {
         output = htmlMinifier.minify(output, {

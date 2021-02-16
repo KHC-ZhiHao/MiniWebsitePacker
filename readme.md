@@ -34,11 +34,11 @@ mini-website-packer serve --lang zh
 
 打包後的結果會輸出在`dist`資料夾中，選項 mini 會壓縮文檔，選項 lang 則是選擇哪種語言作為主要語言，其他語言仍然會輸出自己的資料夾。
 
-> mini
-
 ```bash
 mini-website-packer build --mini --lang zh
 ```
+
+* 使用 --mini 即壓縮所有檔案
 
 ## 說明
 
@@ -108,7 +108,9 @@ src/static/style/index.css
 
 #### 模板
 
-使用`<t-filename></t-filename>`的標籤會在編譯過程中自動找尋`templates`檔案中相對應的檔案名稱，這個標籤**不支援任何Tag屬性)**(例如: class)，可以使用`<slot></slot>`語法來表明插槽位置。
+使用`<t-filename></t-filename>`的標籤會在編譯過程中自動找尋`templates`檔案中相對應的檔案名稱，這個標籤**不支援任何Tag屬性**(例如: class)，可以使用`<slot></slot>`語法來表明插槽位置。
+
+> 你也可以在模板中引用其他模板。
 
 ```html
 <!-- template/wrapper.html -->
@@ -155,6 +157,36 @@ src/static/style/index.css
 <div>
     Hello，Dave
     Your age is 18
+<div>
+```
+
+#### Children Template
+
+可以在 template file 內使用 `<temp name="child"></temp>` 來表明這是一個子模板，可以用`<t-filename.childname>`來獲取定義的子模板。
+
+> 你可以在模板中引用自己的子模板，協助簡潔化程式碼。
+
+```html
+<!-- template/wrapper.html -->
+<div>
+    Hello，<slot></slot>
+<div>
+
+<temp name="hi">
+    Hi，<slot></slot>
+</temp>
+```
+
+```html
+<!-- pages/index.html -->
+<t-wrapper.hi>Dave</t-wrapper.hi>
+```
+
+以下是編譯後的結果：
+
+```html
+<div>
+    Hi，Dave
 <div>
 ```
 

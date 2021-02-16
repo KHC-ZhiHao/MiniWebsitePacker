@@ -1,12 +1,11 @@
 import fsx from 'fs-extra'
 import path from 'path'
-import pretty from 'pretty'
 import imagemin from 'imagemin'
 import imageminJpegtran from 'imagemin-jpegtran'
 import imageminPngquant from 'imagemin-pngquant'
 import { compileHTML } from './compile-html'
 import { compileJs, compileCss } from './compile'
-import { staticDir, pageDir, localDir } from './dir'
+import { staticDir, pageDir, localDir } from './config'
 
 type Params = {
     env: 'prod' | 'dev'
@@ -47,7 +46,7 @@ async function build(params: Params) {
         if (data.ext === '.html') {
             console.log(`正在編譯HTML: ${data.name}${data.ext}`)
             let html = fsx.readFileSync(file).toString()
-            let output = compileHTML(html, {
+            let output = await compileHTML(html, {
                 file,
                 mini: params.mini,
                 readonly: params.readonly,

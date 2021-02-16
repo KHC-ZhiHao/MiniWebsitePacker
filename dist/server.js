@@ -18,7 +18,7 @@ const watch_1 = __importDefault(require("watch"));
 const build_1 = __importDefault(require("./build"));
 const express_1 = __importDefault(require("express"));
 const http_1 = require("http");
-const dir_1 = require("./dir");
+const config_1 = require("./config");
 function default_1(props) {
     const app = express_1.default();
     const server = new http_1.Server(app);
@@ -37,7 +37,7 @@ function default_1(props) {
         });
     });
     let hasChange = false;
-    watch_1.default.watchTree(dir_1.rootDir, {
+    watch_1.default.watchTree(config_1.rootDir, {
         interval: 1.5,
         ignoreDirectoryPattern: /node_modules/
     }, () => __awaiter(this, void 0, void 0, function* () {
