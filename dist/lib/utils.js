@@ -1,14 +1,16 @@
-export const getDir = (root) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.htmlEncryption = exports.htmlHotreload = exports.getDir = void 0;
+exports.getDir = (root) => {
     return {
         rootDir: root,
         localDir: `${root}/locales`,
         templateDir: `${root}/templates`,
         pageDir: `${root}/pages`,
         staticDir: `${root}/static`
-    }
-}
-
-export const htmlHotreload = (html: string) => {
+    };
+};
+exports.htmlHotreload = (html) => {
     return html + `
         <script>
             setInterval(() => {
@@ -22,19 +24,18 @@ export const htmlHotreload = (html: string) => {
                     oReq.send()
             }, 1500)
         </script>
-    `
-}
-
-export const htmlEncryption = (html: string) => {
-    let id = Buffer.from(Date.now().toString()).toString('base64')
-    let base64 = Buffer.from(html, 'utf8').toString('base64')
+    `;
+};
+exports.htmlEncryption = (html) => {
+    let id = Buffer.from(Date.now().toString()).toString('base64');
+    let base64 = Buffer.from(html, 'utf8').toString('base64');
     let doc = `
         (function() {
             var a = \`${unescape(encodeURIComponent(base64))}\`
             var b = __c__(atob(a))
             __q__.write(decodeURIComponent(b))
         })()
-    `
+    `;
     return `
         <script>
             (function (a, e) {
@@ -100,5 +101,5 @@ export const htmlEncryption = (html: string) => {
                 return a.replace('${id}', '')
             })
         </script>
-    `
-}
+    `;
+};

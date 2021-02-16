@@ -5,12 +5,13 @@ import imageminJpegtran from 'imagemin-jpegtran'
 import imageminPngquant from 'imagemin-pngquant'
 import { compileHTML } from './compile-html'
 import { compileJs, compileCss } from './compile'
-import { staticDir, pageDir, localDir } from './config'
+import { getDir } from './utils'
 
 type Params = {
     env: 'prod' | 'dev'
     lang: string
     mini: boolean
+    rootDir: string
     readonly: boolean
     outputDir: string
     config: {
@@ -25,6 +26,7 @@ async function build(params: Params) {
         env: params.env,
         lang: params.lang
     }
+    const { staticDir, pageDir } = getDir(params.rootDir)
     // 複製靜態檔案
     fsx.copySync(staticDir, params.outputDir + '/static', {
         filter: (src, dest) => {
@@ -49,6 +51,7 @@ async function build(params: Params) {
             let output = await compileHTML(html, {
                 file,
                 mini: params.mini,
+                rootDir: params.rootDir,
                 readonly: params.readonly,
                 hotReload: params.env === 'dev',
                 variables
@@ -97,6 +100,7 @@ export default async function(params: Params) {
         fsx.removeSync(params.outputDir)
     }
     // 獲取所有語系檔案
+    let localDir = getDir(params.rootDir).localDir
     let langs = fsx.readdirSync(localDir).map(s => s.replace('.json', ''))
     for (let lang of langs) {
         if (lang === params.lang) {

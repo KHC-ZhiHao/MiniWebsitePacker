@@ -4,12 +4,12 @@ import watch from 'watch'
 import build from './build'
 import express from 'express'
 import { Server } from 'http'
-import { rootDir } from './config'
 
 type Props = {
     port: number
     host: string
     lang: string
+    rootDir: string
     confPath: string
     outputDir: string
 }
@@ -28,13 +28,14 @@ export default function(props: Props) {
             readonly: false,
             lang: props.lang,
             mini: false,
+            rootDir: props.rootDir,
             outputDir: props.outputDir
         })
     }
 
     let hasChange = false
 
-    watch.watchTree(rootDir, {
+    watch.watchTree(props.rootDir, {
         interval: 1.5,
         ignoreDirectoryPattern: /node_modules/
     }, async() => {

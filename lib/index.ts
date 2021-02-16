@@ -14,6 +14,7 @@ program.option('--lang <target>', 'Main language, default is zh.', 'zh')
 program.option('--port <target>', 'Service prot, default is 8080.', '8080')
 program.option('--host <target>', 'Service host, default is localhost.', 'localhost')
 program.action((mode, name = 'my-project') => {
+    let rootDir = './src'
     let outputDir = './dist'
     let lang: string = program.lang
     let host: string = program.host
@@ -35,6 +36,7 @@ program.action((mode, name = 'my-project') => {
             lang,
             readonly,
             mini: !!program.mini,
+            rootDir,
             outputDir
         })
     }
@@ -44,6 +46,7 @@ program.action((mode, name = 'my-project') => {
             host,
             lang,
             confPath: program.conf,
+            rootDir,
             outputDir
         })
     }

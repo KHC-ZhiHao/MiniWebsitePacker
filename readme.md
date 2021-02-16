@@ -108,15 +108,19 @@ src/static/style/index.css
 
 #### 模板
 
-使用`<t-filename></t-filename>`的標籤會在編譯過程中自動找尋`templates`檔案中相對應的檔案名稱，這個標籤**不支援任何Tag屬性**(例如: class)，可以使用`<slot></slot>`語法來表明插槽位置。
+使用`<t-filename></t-filename>`的標籤會在編譯過程中自動找尋`templates`檔案中相對應的檔案名稱，這個標籤**不支援任何Tag屬性**(例如: class)，且必須使用`<template></template>`包裝起來，並使用`<slot></slot>`語法來表明插槽位置。
 
 > 你也可以在模板中引用其他模板。
 
+> 由於是採用 cheerio 作為解讀工具，這個套件會自動處理html大綱結構，所以請避免在template中出現`<html>`、`<head>`、`<body>`這三種標籤。
+
 ```html
 <!-- template/wrapper.html -->
-<div>
-    Hello，<slot></slot>
-<div>
+<template>
+    <div>
+        Hello，<slot></slot>
+    <div>
+</template>
 ```
 
 ```html
@@ -140,10 +144,12 @@ src/static/style/index.css
 
 ```html
 <!-- template/wrapper.html -->
-<div>
-    Hello，:name:
-    Your age is :age:
-<div>
+<template>
+    <div>
+        Hello，:name:
+        Your age is :age:
+    <div>
+</template>
 ```
 
 ```html
@@ -162,19 +168,23 @@ src/static/style/index.css
 
 #### Children Template
 
-可以在 template file 內使用 `<temp name="child"></temp>` 來表明這是一個子模板，可以用`<t-filename.childname>`來獲取定義的子模板。
+可以在 template file 內使用 `<template name="child"></template>` 來表明這是一個子模板，可以用`<t-filename.childname>`來獲取定義的子模板。
 
 > 你可以在模板中引用自己的子模板，協助簡潔化程式碼。
 
 ```html
 <!-- template/wrapper.html -->
-<div>
-    Hello，<slot></slot>
-<div>
+<template>
+    <div>
+        Hello，<slot></slot>
+    <div>
+</template>
 
-<temp name="hi">
-    Hi，<slot></slot>
-</temp>
+<template name="hi">
+    <div>
+        Hi，<slot></slot>
+    </div>
+</template>
 ```
 
 ```html
@@ -193,6 +203,8 @@ src/static/style/index.css
 #### 語系
 
 使用`{text}`會去找尋locales檔案中指定的語系(預設是zh)並填入，該語系檔案必須是json檔。
+
+> 語系在編譯過程中會產生自己的目錄，請勿在pages中建立其語系相同名稱的資料夾以避免衝突。
 
 ```js
 // locales/zh-tw.json
@@ -220,7 +232,7 @@ src/static/style/index.css
 
 當我們需要圖片或是管理css相關檔案時，請把檔案放在`static`中。
 
-> 需注意的是該檔案會隨著編譯一起到專案的跟目錄中，請勿在pages中建立static資料夾以避免衝突。
+> 需注意的是該檔案會隨著編譯一起到專案的根目錄中，請勿在pages中建立static資料夾以避免衝突。
 
 ```html
 <!-- pages/index.html -->

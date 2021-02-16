@@ -1,11 +1,10 @@
 import fsx from 'fs-extra'
 import pretty from 'pretty'
-import * as cheerio from 'cheerio'
+import cheerio from 'cheerio'
 import htmlMinifier from 'html-minifier'
 import escapeStringRegexp from 'escape-string-regexp'
-import { htmlHotreload, htmlEncryption } from './utils'
+import { htmlHotreload, htmlEncryption, getDir } from './utils'
 import { compileCss, compileJs } from './compile'
-import { templateDir, localDir } from './config'
 
 function clearComment(file: string, text: string) {
     let lines = text.split('\n')
@@ -46,19 +45,22 @@ function randerTemplate(html: string, templates: Templates) {
                 content = content.replace(new RegExp(`:${escapeStringRegexp(key)}:`, 'g'), element.attribs[key])
             }
             let result = content.replace(/<slot>.*<\/slot>/g, getElementContent(element))
-            $(element).replaceWith(result)
+            let text = escapeStringRegexp(element.name)
+            let reg = new RegExp(`<${text}.*?<\/${text}>`, 'gs')
+            output = output.replace(reg, result)
             matched = true
         }
     })
     if (matched) {
-        output = randerTemplate($.html(), templates)
+        output = randerTemplate(output, templates)
     }
-    return $.html()
+    return output
 }
 
 type compileHTMLParams = {
     file: string
     mini: boolean
+    rootDir: string
     readonly: boolean
     hotReload: boolean
     variables: {
@@ -69,10 +71,10 @@ type compileHTMLParams = {
 }
 
 function getElementContent(element: cheerio.TagElement) {
-    return element.children.map(e => e.data).join('\n')
+    return element.children.map(e => cheerio.html(e)).join('').trim()
 }
 
-function getNodes(io: cheerio.Cheerio):cheerio.TagElement[]  {
+function getNodes(io: cheerio.Cheerio): cheerio.TagElement[]  {
     let nodes = []
     io.each((i, e) => nodes.push(e))
     return nodes
@@ -81,22 +83,18 @@ function getNodes(io: cheerio.Cheerio):cheerio.TagElement[]  {
 export async function compileHTML(html: string, params: compileHTMLParams): Promise<string> {
     let output = html.toString()
     let templates: Templates = []
+    let { templateDir, localDir } = getDir(params.rootDir)
     fsx.readdirSync(templateDir).map(file => {
         let name = 't-' + file.replace('.html', '')
         let content = fsx.readFileSync(`${templateDir}/${file}`).toString()
         let $ = cheerio.load(content)
-        let temps = getNodes($('temp'))
+        let temps = getNodes($('template'))
         for (let temp of temps) {
             templates.push({
-                name: `${name}.${temp.attribs.name}`,
+                name: temp.attribs.name ? `${name}.${temp.attribs.name}` : name,
                 content: getElementContent(temp)
             })
-            $(temp).replaceWith('')
         }
-        templates.push({
-            name,
-            content: $.html()
-        })
     })
     // 處理模板與變數
     output = randerTemplate(output, templates)
