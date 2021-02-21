@@ -40,7 +40,6 @@ function randerVariables(html, variables) {
     return html;
 }
 function randerTemplate(file, html, templates, variables) {
-    let matched = false;
     let output = html.toString();
     // 清除系統註解、替換環境參數
     output = clearComment(file, output);
@@ -58,12 +57,9 @@ function randerTemplate(file, html, templates, variables) {
             let text = escape_string_regexp_1.default(element.name);
             let reg = new RegExp(`<${text}.*?<\/${text}>`, 's');
             output = output.replace(reg, result);
-            matched = true;
+            output = randerTemplate(file, output, templates, variables);
         }
     });
-    if (matched) {
-        output = randerTemplate(file, output, templates, variables);
-    }
     return output;
 }
 function getElementContent(element) {
