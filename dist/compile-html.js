@@ -39,9 +39,12 @@ function randerVariables(html, variables) {
     }
     return html;
 }
-function randerTemplate(html, templates) {
+function randerTemplate(file, html, templates, variables) {
     let matched = false;
     let output = html.toString();
+    // 清除系統註解、替換環境參數
+    output = clearComment(file, output);
+    output = randerVariables(output, variables);
     // 渲染模板
     let $ = cheerio_1.default.load(output);
     $('*').each((index, element) => {
@@ -49,7 +52,7 @@ function randerTemplate(html, templates) {
         if (template) {
             let content = template.content.toString();
             for (let key in element.attribs) {
-                content = content.replace(new RegExp(`:${escape_string_regexp_1.default(key)}:`, 'g'), element.attribs[key]);
+                content = content.replace(new RegExp(`-${escape_string_regexp_1.default(key)}-`, 'g'), element.attribs[key]);
             }
             let result = content.replace(/<slot>.*?<\/slot>/g, getElementContent(element));
             let text = escape_string_regexp_1.default(element.name);
@@ -59,7 +62,7 @@ function randerTemplate(html, templates) {
         }
     });
     if (matched) {
-        output = randerTemplate(output, templates);
+        output = randerTemplate(file, output, templates, variables);
     }
     return output;
 }
@@ -89,15 +92,12 @@ function compileHTML(html, params) {
             }
         });
         // 處理模板與變數
-        output = randerTemplate(output, templates);
+        output = randerTemplate(params.file, output, templates, params.variables);
         // 處理語系
         let locale = JSON.parse(fs_extra_1.default.readFileSync(`${localDir}/${params.variables.lang}.json`).toString());
         for (let key in locale) {
             output = output.replace(`{${key}}`, locale[key]);
         }
-        // 清除系統註解、替換環境參數
-        output = clearComment(params.file, output);
-        output = randerVariables(output, params.variables);
         // 解讀 js
         let $ = cheerio_1.default.load(output);
         let scripts = getNodes($('script'));

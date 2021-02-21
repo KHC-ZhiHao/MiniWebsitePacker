@@ -32,9 +32,11 @@ type Templates = Array<{
     content: string
 }>
 
-function randerTemplate(html: string, templates: Templates) {
-    let matched = false 
+function randerTemplate(file: string, html: string, templates: Templates, variables: any) {
     let output = html.toString()
+    // 清除系統註解、替換環境參數
+    output = clearComment(file, output)
+    output = randerVariables(output, variables)
     // 渲染模板
     let $ = cheerio.load(output)
     $('*').each((index, element: cheerio.TagElement) => {
@@ -42,18 +44,15 @@ function randerTemplate(html: string, templates: Templates) {
         if (template) {
             let content = template.content.toString()
             for (let key in element.attribs) {
-                content = content.replace(new RegExp(`:${escapeStringRegexp(key)}:`, 'g'), element.attribs[key])
+                content = content.replace(new RegExp(`-${escapeStringRegexp(key)}-`, 'g'), element.attribs[key])
             }
             let result = content.replace(/<slot>.*?<\/slot>/g, getElementContent(element))
             let text = escapeStringRegexp(element.name)
             let reg = new RegExp(`<${text}.*?<\/${text}>`, 's')
             output = output.replace(reg, result)
-            matched = true
+            output = randerTemplate(file, output, templates, variables)
         }
     })
-    if (matched) {
-        output = randerTemplate(output, templates)
-    }
     return output
 }
 
@@ -97,15 +96,12 @@ export async function compileHTML(html: string, params: compileHTMLParams): Prom
         }
     })
     // 處理模板與變數
-    output = randerTemplate(output, templates)
+    output = randerTemplate(params.file, output, templates, params.variables)
     // 處理語系
     let locale = JSON.parse(fsx.readFileSync(`${localDir}/${params.variables.lang}.json`).toString())
     for (let key in locale) {
         output = output.replace(`{${key}}`, locale[key])
     }
-    // 清除系統註解、替換環境參數
-    output = clearComment(params.file, output)
-    output = randerVariables(output, params.variables)
     // 解讀 js
     let $ = cheerio.load(output)
     let scripts = getNodes($('script'))
