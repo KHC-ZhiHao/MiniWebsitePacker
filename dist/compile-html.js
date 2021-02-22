@@ -41,25 +41,37 @@ function randerVariables(html, variables) {
 }
 function randerTemplate(file, html, templates, variables) {
     let output = html.toString();
-    // 清除系統註解、替換環境參數
-    output = clearComment(file, output);
-    output = randerVariables(output, variables);
-    // 渲染模板
-    let $ = cheerio_1.default.load(output);
-    $('*').each((index, element) => {
-        let template = templates.find(e => e.name === element.name);
-        if (template) {
-            let content = template.content.toString();
-            for (let key in element.attribs) {
-                content = content.replace(new RegExp(`-${escape_string_regexp_1.default(key)}-`, 'g'), element.attribs[key]);
+    while (true) {
+        // 清除系統註解、替換環境參數
+        output = clearComment(file, output);
+        output = randerVariables(output, variables);
+        // 渲染模板
+        let $ = cheerio_1.default.load(output);
+        let elements = [];
+        $('*').each((index, element) => {
+            elements.push(element);
+        });
+        let matched = false;
+        for (let element of elements) {
+            let template = templates.find(e => e.name === element.name);
+            if (template) {
+                let content = template.content.toString();
+                for (let key in element.attribs) {
+                    content = content.replace(new RegExp(`-${escape_string_regexp_1.default(key)}-`, 'g'), element.attribs[key]);
+                }
+                let result = content.replace(/<slot>.*?<\/slot>/g, getElementContent(element));
+                let text = escape_string_regexp_1.default(element.name);
+                let reg = new RegExp(`<${text}.*?<\/${text}>`, 's');
+                output = output.replace(reg, result);
+                // output = randerTemplate(file, output, templates, variables)
+                matched = true;
+                break;
             }
-            let result = content.replace(/<slot>.*?<\/slot>/g, getElementContent(element));
-            let text = escape_string_regexp_1.default(element.name);
-            let reg = new RegExp(`<${text}.*?<\/${text}>`, 's');
-            output = output.replace(reg, result);
-            output = randerTemplate(file, output, templates, variables);
         }
-    });
+        if (matched === false) {
+            break;
+        }
+    }
     return output;
 }
 function getElementContent(element) {

@@ -34,25 +34,37 @@ type Templates = Array<{
 
 function randerTemplate(file: string, html: string, templates: Templates, variables: any) {
     let output = html.toString()
-    // 清除系統註解、替換環境參數
-    output = clearComment(file, output)
-    output = randerVariables(output, variables)
-    // 渲染模板
-    let $ = cheerio.load(output)
-    $('*').each((index, element: cheerio.TagElement) => {
-        let template = templates.find(e => e.name === element.name)
-        if (template) {
-            let content = template.content.toString()
-            for (let key in element.attribs) {
-                content = content.replace(new RegExp(`-${escapeStringRegexp(key)}-`, 'g'), element.attribs[key])
+    while (true) {
+        // 清除系統註解、替換環境參數
+        output = clearComment(file, output)
+        output = randerVariables(output, variables)
+        // 渲染模板
+        let $ = cheerio.load(output)
+        let elements: cheerio.TagElement[] = []
+        $('*').each((index, element: cheerio.TagElement) => {
+            elements.push(element)
+        })
+        let matched = false
+        for (let element of elements) {
+            let template = templates.find(e => e.name === element.name)
+            if (template) {
+                let content = template.content.toString()
+                for (let key in element.attribs) {
+                    content = content.replace(new RegExp(`-${escapeStringRegexp(key)}-`, 'g'), element.attribs[key])
+                }
+                let result = content.replace(/<slot>.*?<\/slot>/g, getElementContent(element))
+                let text = escapeStringRegexp(element.name)
+                let reg = new RegExp(`<${text}.*?<\/${text}>`, 's')
+                output = output.replace(reg, result)
+                // output = randerTemplate(file, output, templates, variables)
+                matched = true
+                break
             }
-            let result = content.replace(/<slot>.*?<\/slot>/g, getElementContent(element))
-            let text = escapeStringRegexp(element.name)
-            let reg = new RegExp(`<${text}.*?<\/${text}>`, 's')
-            output = output.replace(reg, result)
-            output = randerTemplate(file, output, templates, variables)
         }
-    })
+        if (matched === false) {
+            break
+        }
+    }
     return output
 }
 

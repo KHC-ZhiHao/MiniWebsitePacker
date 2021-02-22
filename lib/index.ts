@@ -47,7 +47,7 @@ program.action((mode, name = 'my-project') => {
             lang,
             confPath: program.conf,
             rootDir,
-            outputDir
+            outputDir: './.output'
         })
     }
 })

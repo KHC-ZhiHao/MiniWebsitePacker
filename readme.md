@@ -138,7 +138,7 @@ src/static/style/index.css
 
 #### Props
 
-在**模板**中使用`:name:`意味著這個值必須從外部傳遞。
+在**模板**中使用`-name-`意味著這個值必須從外部傳遞。
 
 > 注意空白鍵是敏感的。
 
@@ -146,8 +146,8 @@ src/static/style/index.css
 <!-- template/wrapper.html -->
 <template>
     <div>
-        Hello，:name:
-        Your age is :age:
+        Hello，-name-
+        Your age is -age-
     <div>
 </template>
 ```
@@ -207,7 +207,7 @@ src/static/style/index.css
 > 語系在編譯過程中會產生自己的目錄，請勿在pages中建立其語系相同名稱的資料夾以避免衝突。
 
 ```js
-// locales/zh-tw.json
+// locales/zh.json
 {
     "name": "Dave"
 }
@@ -248,7 +248,7 @@ src/static/style/index.css
 
 ```html
 <!--- Props: title --->
-<div>:title:</div>
+<div>-title-</div>
 ```
 
 使用警告註解可以在編譯過程中發出警告，目的在於給未定義的參數添加檢查提示：
