@@ -56,7 +56,6 @@ function randerTemplate(file: string, html: string, templates: Templates, variab
                 let text = escapeStringRegexp(element.name)
                 let reg = new RegExp(`<${text}.*?<\/${text}>`, 's')
                 output = output.replace(reg, result)
-                // output = randerTemplate(file, output, templates, variables)
                 matched = true
                 break
             }
