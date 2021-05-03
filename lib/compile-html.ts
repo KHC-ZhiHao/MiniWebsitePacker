@@ -90,11 +90,26 @@ function getNodes(io: cheerio.Cheerio): cheerio.TagElement[]  {
     return nodes
 }
 
+function getAllFiles(root: string, child?: string) {
+    let output = []
+    let rootPath = root + (child ? '/' + child : '')
+    let nextPath = child ? child + '/' : ''
+    let files = fsx.readdirSync(rootPath)
+    for (let file of files) {
+        if (fsx.statSync(rootPath + '/' + file).isDirectory()) {
+            output = output.concat(getAllFiles(root, nextPath + file))
+        } else {
+            output.push(`${nextPath}${file}`)
+        }
+    }
+    return output
+}
+
 export async function compileHTML(html: string, params: compileHTMLParams): Promise<string> {
     let output = html.toString()
     let templates: Templates = []
     let { templateDir, localDir } = getDir(params.rootDir)
-    fsx.readdirSync(templateDir).map(file => {
+    getAllFiles(templateDir).map(file => {
         let name = 't-' + file.replace('.html', '')
         let content = fsx.readFileSync(`${templateDir}/${file}`).toString()
         let $ = cheerio.load(content)

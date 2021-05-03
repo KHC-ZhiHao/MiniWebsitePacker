@@ -17,9 +17,9 @@ const path_1 = __importDefault(require("path"));
 const imagemin_1 = __importDefault(require("imagemin"));
 const imagemin_jpegtran_1 = __importDefault(require("imagemin-jpegtran"));
 const imagemin_pngquant_1 = __importDefault(require("imagemin-pngquant"));
+const utils_1 = require("./utils");
 const compile_html_1 = require("./compile-html");
 const compile_1 = require("./compile");
-const utils_1 = require("./utils");
 function build(params) {
     return __awaiter(this, void 0, void 0, function* () {
         const outputFiles = [];
@@ -58,17 +58,19 @@ function build(params) {
             }
             // image
             if (data.ext === '.png' || data.ext === '.jpg') {
-                console.log(`正在壓縮: ${data.name}${data.ext}`);
-                let buffer = fs_extra_1.default.readFileSync(file);
-                let result = yield imagemin_1.default.buffer(buffer, {
-                    plugins: [
-                        imagemin_jpegtran_1.default(),
-                        imagemin_pngquant_1.default({
-                            quality: [0.6, 0.8]
-                        })
-                    ]
-                });
-                fs_extra_1.default.writeFileSync(file, result);
+                if (params.env === 'prod') {
+                    console.log(`正在壓縮: ${data.name}${data.ext}`);
+                    let buffer = fs_extra_1.default.readFileSync(file);
+                    let result = yield imagemin_1.default.buffer(buffer, {
+                        plugins: [
+                            imagemin_jpegtran_1.default(),
+                            imagemin_pngquant_1.default({
+                                quality: [0.6, 0.8]
+                            })
+                        ]
+                    });
+                    fs_extra_1.default.writeFileSync(file, result);
+                }
             }
             // javascript
             if (data.ext === '.js') {

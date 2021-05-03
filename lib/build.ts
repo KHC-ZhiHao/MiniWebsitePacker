@@ -3,9 +3,9 @@ import path from 'path'
 import imagemin from 'imagemin'
 import imageminJpegtran from 'imagemin-jpegtran'
 import imageminPngquant from 'imagemin-pngquant'
+import { getDir } from './utils'
 import { compileHTML } from './compile-html'
 import { compileJs, compileCss } from './compile'
-import { getDir } from './utils'
 
 type Params = {
     env: 'prod' | 'dev'
@@ -60,17 +60,19 @@ async function build(params: Params) {
         }
         // image
         if (data.ext === '.png' || data.ext === '.jpg') {
-            console.log(`正在壓縮: ${data.name}${data.ext}`)
-            let buffer = fsx.readFileSync(file)
-            let result = await imagemin.buffer(buffer, {
-                plugins: [
-                    imageminJpegtran(),
-                    imageminPngquant({
-                        quality: [0.6, 0.8]
-                    })
-                ]
-            })
-            fsx.writeFileSync(file, result)
+            if (params.env === 'prod') {
+                console.log(`正在壓縮: ${data.name}${data.ext}`)
+                let buffer = fsx.readFileSync(file)
+                let result = await imagemin.buffer(buffer, {
+                    plugins: [
+                        imageminJpegtran(),
+                        imageminPngquant({
+                            quality: [0.6, 0.8]
+                        })
+                    ]
+                })
+                fsx.writeFileSync(file, result)
+            }
         }
         // javascript
         if (data.ext === '.js') {

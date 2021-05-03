@@ -63,7 +63,6 @@ function randerTemplate(file, html, templates, variables) {
                 let text = escape_string_regexp_1.default(element.name);
                 let reg = new RegExp(`<${text}.*?<\/${text}>`, 's');
                 output = output.replace(reg, result);
-                // output = randerTemplate(file, output, templates, variables)
                 matched = true;
                 break;
             }
@@ -82,13 +81,29 @@ function getNodes(io) {
     io.each((i, e) => nodes.push(e));
     return nodes;
 }
+function getAllFiles(root, child) {
+    let output = [];
+    let rootPath = root + (child ? '/' + child : '');
+    let nextPath = child ? child + '/' : '';
+    let files = fs_extra_1.default.readdirSync(rootPath);
+    for (let file of files) {
+        if (fs_extra_1.default.statSync(rootPath + '/' + file).isDirectory()) {
+            output = output.concat(getAllFiles(root, nextPath + file));
+        }
+        else {
+            output.push(`${nextPath}${file}`);
+        }
+    }
+    return output;
+}
 function compileHTML(html, params) {
     return __awaiter(this, void 0, void 0, function* () {
         let output = html.toString();
         let templates = [];
         let { templateDir, localDir } = utils_1.getDir(params.rootDir);
-        fs_extra_1.default.readdirSync(templateDir).map(file => {
+        getAllFiles(templateDir).map(file => {
             let name = 't-' + file.replace('.html', '');
+            console.log(name);
             let content = fs_extra_1.default.readFileSync(`${templateDir}/${file}`).toString();
             let $ = cheerio_1.default.load(content);
             let temps = getNodes($('template'));

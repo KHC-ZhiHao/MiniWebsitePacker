@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.htmlEncryption = exports.htmlHotreload = exports.getDir = void 0;
-exports.getDir = (root) => {
+const getDir = (root) => {
     return {
         rootDir: root,
         localDir: `${root}/locales`,
@@ -10,7 +10,8 @@ exports.getDir = (root) => {
         staticDir: `${root}/static`
     };
 };
-exports.htmlHotreload = (html) => {
+exports.getDir = getDir;
+const htmlHotreload = (html) => {
     return html + `
         <script>
             setInterval(() => {
@@ -26,7 +27,8 @@ exports.htmlHotreload = (html) => {
         </script>
     `;
 };
-exports.htmlEncryption = (html) => {
+exports.htmlHotreload = htmlHotreload;
+const htmlEncryption = (html) => {
     let id = Buffer.from(Date.now().toString()).toString('base64');
     let base64 = Buffer.from(html, 'utf8').toString('base64');
     let doc = `
@@ -103,3 +105,4 @@ exports.htmlEncryption = (html) => {
         </script>
     `;
 };
+exports.htmlEncryption = htmlEncryption;

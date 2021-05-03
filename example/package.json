@@ -6,8 +6,6 @@
     "build-readonly": "mini-website-packer build --conf ./src/config.json --mini --readonly"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.13",
-    "@babel/preset-env": "^7.12.13",
     "mini-website-packer": "^1.0.1"
   }
 }

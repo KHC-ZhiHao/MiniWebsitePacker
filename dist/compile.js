@@ -18,7 +18,7 @@ const clean_css_1 = __importDefault(require("clean-css"));
 const autoprefixer_1 = __importDefault(require("autoprefixer"));
 const escape_string_regexp_1 = __importDefault(require("escape-string-regexp"));
 const terser_1 = require("terser");
-exports.compileJs = (code, options) => __awaiter(void 0, void 0, void 0, function* () {
+const compileJs = (code, options) => __awaiter(void 0, void 0, void 0, function* () {
     let babel = require('@babel/core');
     let output = yield new Promise((resolve, reject) => {
         babel.transform(code, {
@@ -41,7 +41,8 @@ exports.compileJs = (code, options) => __awaiter(void 0, void 0, void 0, functio
     }
     return output;
 });
-exports.compileCss = (css, options) => __awaiter(void 0, void 0, void 0, function* () {
+exports.compileJs = compileJs;
+const compileCss = (css, options) => __awaiter(void 0, void 0, void 0, function* () {
     let code = css.toString();
     for (let key in options.variables) {
         let text = escape_string_regexp_1.default(`--${key}--`);
@@ -63,3 +64,4 @@ exports.compileCss = (css, options) => __awaiter(void 0, void 0, void 0, functio
     }
     return output;
 });
+exports.compileCss = compileCss;
