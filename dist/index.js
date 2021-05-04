@@ -50,7 +50,7 @@ commander_1.default.action((mode, name = 'my-project') => {
             lang,
             confPath: commander_1.default.conf,
             rootDir,
-            outputDir: './.output'
+            outputDir: './.dev'
         });
     }
 });

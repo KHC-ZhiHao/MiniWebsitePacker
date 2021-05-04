@@ -103,13 +103,14 @@ function compileHTML(html, params) {
         let { templateDir, localDir } = utils_1.getDir(params.rootDir);
         getAllFiles(templateDir).map(file => {
             let name = 't-' + file.replace('.html', '');
-            console.log(name);
             let content = fs_extra_1.default.readFileSync(`${templateDir}/${file}`).toString();
             let $ = cheerio_1.default.load(content);
             let temps = getNodes($('template'));
             for (let temp of temps) {
+                let templateName = (temp.attribs.name ? `${name}.${temp.attribs.name}` : name).replace('/', '|');
+                console.log('模板', templateName);
                 templates.push({
-                    name: temp.attribs.name ? `${name}.${temp.attribs.name}` : name,
+                    name: templateName,
                     content: getElementContent(temp)
                 });
             }

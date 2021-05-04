@@ -115,8 +115,10 @@ export async function compileHTML(html: string, params: compileHTMLParams): Prom
         let $ = cheerio.load(content)
         let temps = getNodes($('template'))
         for (let temp of temps) {
+            let templateName = (temp.attribs.name ? `${name}.${temp.attribs.name}` : name).replace('/', '|')
+            console.log('模板', templateName)
             templates.push({
-                name: temp.attribs.name ? `${name}.${temp.attribs.name}` : name,
+                name: templateName,
                 content: getElementContent(temp)
             })
         }
