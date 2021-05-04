@@ -200,6 +200,24 @@ src/static/style/index.css
 <div>
 ```
 
+#### Folder Template
+
+當然也是可以透過資料夾管理，但資料夾必須在 template 裡面才會生效，要獲取資料夾結構的模板必須用 `|` 符號分離。
+
+```html
+<!-- template/home/wrapper.html -->
+<template>
+    <div>
+        Hello，<slot></slot>
+    <div>
+</template>
+```
+
+```html
+<!-- pages/index.html -->
+<t-home|wrapper>Dave</t-home|wrapper>
+```
+
 #### 語系
 
 使用`{text}`會去找尋locales檔案中指定的語系(預設是zh)並填入，該語系檔案必須是json檔。
