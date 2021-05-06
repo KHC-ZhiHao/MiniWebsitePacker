@@ -2,6 +2,7 @@ import postcss from 'postcss'
 import CleanCss from 'clean-css'
 import autoprefixer from 'autoprefixer'
 import escapeStringRegexp from 'escape-string-regexp'
+import { transform } from "@babel/core"
 import { minify } from "terser"
 
 type CompileJsOptions = {
@@ -9,9 +10,8 @@ type CompileJsOptions = {
 }
 
 export const compileJs = async (code: string, options: CompileJsOptions) => {
-    let babel = require('@babel/core')
     let output: string = await new Promise((resolve, reject) => {
-        babel.transform(code, {
+        transform(code, {
             presets: [
                 [
                     '@babel/preset-env'

@@ -17,11 +17,11 @@ const postcss_1 = __importDefault(require("postcss"));
 const clean_css_1 = __importDefault(require("clean-css"));
 const autoprefixer_1 = __importDefault(require("autoprefixer"));
 const escape_string_regexp_1 = __importDefault(require("escape-string-regexp"));
+const core_1 = require("@babel/core");
 const terser_1 = require("terser");
 const compileJs = (code, options) => __awaiter(void 0, void 0, void 0, function* () {
-    let babel = require('@babel/core');
     let output = yield new Promise((resolve, reject) => {
-        babel.transform(code, {
+        core_1.transform(code, {
             presets: [
                 [
                     '@babel/preset-env'
