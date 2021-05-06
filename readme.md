@@ -1,4 +1,16 @@
-# Mini Website Packer
+<br>
+
+<p align="center"><img style="max-width: 300px" src="./logo.png"></p>
+
+<h1 align="center">Mini Website Packer</h1>
+
+<p align="center">
+    <a href="https://www.npmjs.com/package/mini-website-packer"><img src="https://img.shields.io/npm/v/mini-website-packer.svg"></a>
+    <a href="https://github.com/KHC-ZhiHao/mini-website-packer"><img src="https://img.shields.io/github/stars/KHC-ZhiHao/mini-website-packer.svg?style=social"></a>
+    <br>
+</p>
+
+<br>
 
 這是一個快速開發靜態網站的建置工具，不需要安裝太多東西就能發布純HTML檔案，協助轉換 JS 支援 es5、auto prefix CSS 等複雜行為，甚至可以根據語系編譯 HTML，還會順便幫你壓縮圖片，適合簡單的 DEMO 網站或是形象網站。
 
