@@ -37,8 +37,8 @@
     "pretty": "^2.0.0",
     "terser": "^5.6.0",
     "watch": "^1.0.2",
-    "@babel/core": "^7.12.13",
-    "@babel/preset-env": "^7.12.13"
+    "@babel/core": "7.12.13",
+    "@babel/preset-env": "7.12.13"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.24",
