@@ -1,6 +1,6 @@
 <br>
 
-<p align="center"><img style="max-width: 300px" src="./logo.png"></p>
+<p align="center"><img style="max-width: 300px; width: 150px" src="./logo.png"></p>
 
 <h1 align="center">Mini Website Packer</h1>
 
