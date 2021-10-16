@@ -101,7 +101,9 @@ src/config.json
 
 ```json
 {
-    "primary": "red"
+    "variables": {
+        "primary": "red"
+    }
 }
 ```
 
