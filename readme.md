@@ -180,6 +180,40 @@ src/static/style/index.css
 <div>
 ```
 
+#### Template Script
+
+有時候我們透過 `<script>` 標籤開發並不方便，這裡提供一個專屬於 template 開發的方法：
+
+```html
+<!-- template/wrapper.html -->
+<template script="-name-">
+    <div>
+        Hello，-name-
+    <div>
+</template>
+```
+
+在與 html 相同檔案的路徑下建立一個同名的 js 檔案：
+
+```js
+// template/wrapper.js
+// 系統會自動執行並閉包，並傳遞一個 args 參數
+console.log(args)
+```
+
+以下是編譯後的結果：
+
+```html
+<div>
+    Hello，Dave
+<div>
+<script>
+    (function(args) {
+        console.log(args)
+    })("Dave")
+</script>
+```
+
 #### Children Template
 
 可以在 template file 內使用 `<template name="child"></template>` 來表明這是一個子模板，可以用`<t-filename.childname>`來獲取定義的子模板。

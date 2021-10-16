@@ -33,7 +33,7 @@ commander_1.default.action((mode, name = 'my-project') => {
         if (commander_1.default.conf) {
             conf = JSON.parse(fs_extra_1.default.readFileSync(commander_1.default.conf).toString());
         }
-        build_1.default({
+        (0, build_1.default)({
             config: conf,
             env: 'prod',
             lang,
@@ -44,7 +44,7 @@ commander_1.default.action((mode, name = 'my-project') => {
         });
     }
     if (mode === 'serve') {
-        server_1.default({
+        (0, server_1.default)({
             port,
             host,
             lang,

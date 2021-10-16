@@ -21,7 +21,7 @@ const core_1 = require("@babel/core");
 const terser_1 = require("terser");
 const compileJs = (code, options) => __awaiter(void 0, void 0, void 0, function* () {
     let output = yield new Promise((resolve, reject) => {
-        core_1.transform(code, {
+        (0, core_1.transform)(code, {
             presets: [
                 [
                     '@babel/preset-env'
@@ -37,7 +37,7 @@ const compileJs = (code, options) => __awaiter(void 0, void 0, void 0, function*
         });
     });
     if (options.mini) {
-        output = (yield terser_1.minify(output)).code;
+        output = (yield (0, terser_1.minify)(output)).code;
     }
     return output;
 });
@@ -45,12 +45,12 @@ exports.compileJs = compileJs;
 const compileCss = (css, options) => __awaiter(void 0, void 0, void 0, function* () {
     let code = css.toString();
     for (let key in options.variables) {
-        let text = escape_string_regexp_1.default(`--${key}--`);
+        let text = (0, escape_string_regexp_1.default)(`--${key}--`);
         let reg = new RegExp(text, 'g');
         code = code.replace(reg, options.variables[key]);
     }
-    let post = postcss_1.default([
-        autoprefixer_1.default({
+    let post = (0, postcss_1.default)([
+        (0, autoprefixer_1.default)({
             overrideBrowserslist: ['last 2 version', '> 1%', 'IE 10']
         })
     ]);

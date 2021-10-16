@@ -19,14 +19,14 @@ const build_1 = __importDefault(require("./build"));
 const express_1 = __importDefault(require("express"));
 const http_1 = require("http");
 function default_1(props) {
-    const app = express_1.default();
+    const app = (0, express_1.default)();
     const server = new http_1.Server(app);
     const buildFile = () => __awaiter(this, void 0, void 0, function* () {
         let config = {};
         if (props.confPath) {
             config = JSON.parse(fs_extra_1.default.readFileSync(props.confPath).toString());
         }
-        yield build_1.default({
+        yield (0, build_1.default)({
             config,
             env: 'dev',
             readonly: false,
@@ -47,7 +47,7 @@ function default_1(props) {
         let url = `http://${props.host}:${props.port}`;
         console.log(`Server正在運行中: ${url}`);
     }));
-    app.use(cors_1.default());
+    app.use((0, cors_1.default)());
     app.use(express_1.default.static(props.outputDir, {
         extensions: ['html']
     }));

@@ -33,7 +33,7 @@ function clearComment(file, text) {
 }
 function randerVariables(html, variables) {
     for (let key in variables) {
-        let text = escape_string_regexp_1.default(`--${key}--`);
+        let text = (0, escape_string_regexp_1.default)(`--${key}--`);
         let reg = new RegExp(text, 'g');
         html = html.replace(reg, variables[key]);
     }
@@ -57,10 +57,10 @@ function randerTemplate(file, html, templates, variables) {
             if (template) {
                 let content = template.content.toString();
                 for (let key in element.attribs) {
-                    content = content.replace(new RegExp(`-${escape_string_regexp_1.default(key)}-`, 'g'), element.attribs[key]);
+                    content = content.replace(new RegExp(`-${(0, escape_string_regexp_1.default)(key)}-`, 'g'), element.attribs[key]);
                 }
                 let result = content.replace(/<slot>.*?<\/slot>/g, getElementContent(element));
-                let text = escape_string_regexp_1.default(element.name);
+                let text = (0, escape_string_regexp_1.default)(element.name);
                 let reg = new RegExp(`<${text}.*?<\/${text}>`, 's');
                 output = output.replace(reg, result);
                 matched = true;
@@ -73,8 +73,18 @@ function randerTemplate(file, html, templates, variables) {
     }
     return output;
 }
-function getElementContent(element) {
-    return element.children.map(e => cheerio_1.default.html(e)).join('').trim();
+function getElementContent(element, script, scriptParams) {
+    let html = element.children.map(e => cheerio_1.default.html(e)).join('').trim();
+    if (script) {
+        html += `
+            <script>
+                (function(args) {
+                    ${script}
+                })("${scriptParams}")
+            </script>
+        `;
+    }
+    return html;
 }
 function getNodes(io) {
     let nodes = [];
@@ -100,18 +110,23 @@ function compileHTML(html, params) {
     return __awaiter(this, void 0, void 0, function* () {
         let output = html.toString();
         let templates = [];
-        let { templateDir, localDir } = utils_1.getDir(params.rootDir);
+        let { templateDir, localDir } = (0, utils_1.getDir)(params.rootDir);
         getAllFiles(templateDir).map(file => {
             let name = 't-' + file.replace('.html', '');
             let content = fs_extra_1.default.readFileSync(`${templateDir}/${file}`).toString();
             let $ = cheerio_1.default.load(content);
             let temps = getNodes($('template'));
             for (let temp of temps) {
+                let script = null;
+                let templateScript = temp.attribs.script;
+                if (templateScript != null) {
+                    script = fs_extra_1.default.readFileSync(`${templateDir}/${file.replace('.html', '')}.js`).toString();
+                }
                 let templateName = (temp.attribs.name ? `${name}.${temp.attribs.name}` : name).replace('/', '|');
                 console.log('模板', templateName);
                 templates.push({
                     name: templateName,
-                    content: getElementContent(temp)
+                    content: getElementContent(temp, script, templateScript)
                 });
             }
         });
@@ -128,7 +143,7 @@ function compileHTML(html, params) {
         for (let script of scripts) {
             let content = getElementContent(script);
             if (content.trim()) {
-                let result = yield compile_1.compileJs(content, {
+                let result = yield (0, compile_1.compileJs)(content, {
                     mini: params.mini
                 });
                 $(script).replaceWith(`<script>${result}</script>`);
@@ -139,7 +154,7 @@ function compileHTML(html, params) {
         for (let style of styles) {
             let content = getElementContent(style);
             if (content.trim()) {
-                let result = yield compile_1.compileCss(content, {
+                let result = yield (0, compile_1.compileCss)(content, {
                     mini: params.mini,
                     variables: params.variables
                 });
@@ -162,13 +177,13 @@ function compileHTML(html, params) {
         }
         // readonly
         if (params.readonly) {
-            output = utils_1.htmlEncryption(output);
+            output = (0, utils_1.htmlEncryption)(output);
         }
         // hot reload
         if (params.hotReload) {
-            output = utils_1.htmlHotreload(output);
+            output = (0, utils_1.htmlHotreload)(output);
         }
-        return params.mini ? output : pretty_1.default(output);
+        return params.mini ? output : (0, pretty_1.default)(output);
     });
 }
 exports.compileHTML = compileHTML;

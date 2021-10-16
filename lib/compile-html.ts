@@ -80,8 +80,18 @@ type compileHTMLParams = {
     }
 }
 
-function getElementContent(element: cheerio.TagElement) {
-    return element.children.map(e => cheerio.html(e)).join('').trim()
+function getElementContent(element: cheerio.TagElement, script?: string, scriptParams?: string) {
+    let html = element.children.map(e => cheerio.html(e)).join('').trim()
+    if (script) {
+        html += `
+            <script>
+                (function(args) {
+                    ${script}
+                })("${scriptParams}")
+            </script>
+        `
+    }
+    return html
 }
 
 function getNodes(io: cheerio.Cheerio): cheerio.TagElement[]  {
@@ -115,11 +125,16 @@ export async function compileHTML(html: string, params: compileHTMLParams): Prom
         let $ = cheerio.load(content)
         let temps = getNodes($('template'))
         for (let temp of temps) {
+            let script = null
+            let templateScript = temp.attribs.script
+            if (templateScript != null) {
+                script = fsx.readFileSync(`${templateDir}/${file.replace('.html', '')}.js`).toString()
+            }
             let templateName = (temp.attribs.name ? `${name}.${temp.attribs.name}` : name).replace('/', '|')
             console.log('模板', templateName)
             templates.push({
                 name: templateName,
-                content: getElementContent(temp)
+                content: getElementContent(temp, script, templateScript)
             })
         }
     })
