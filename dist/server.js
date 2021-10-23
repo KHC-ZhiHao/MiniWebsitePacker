@@ -37,12 +37,19 @@ function default_1(props) {
         });
     });
     let hasChange = false;
+    let building = false;
     watch_1.default.watchTree(props.rootDir, {
         interval: 1.5,
         ignoreDirectoryPattern: /node_modules/
     }, () => __awaiter(this, void 0, void 0, function* () {
+        if (building) {
+            return null;
+        }
+        building = true;
         console.log('Building...');
+        yield new Promise(resolve => setTimeout(resolve, 500));
         yield buildFile();
+        building = false;
         hasChange = true;
         let url = `http://${props.host}:${props.port}`;
         console.log(`Server正在運行中: ${url}`);

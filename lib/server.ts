@@ -34,12 +34,23 @@ export default function(props: Props) {
     }
 
     let hasChange = false
+    let building = false
 
     watch.watchTree(props.rootDir, {
         interval: 1.5,
         ignoreDirectoryPattern: /node_modules/
     }, async() => {
+        if (building) {
+            return null
+        }
+        building = true
         console.log('Building...')
+        await new Promise(resolve => {
+            setTimeout(() => {
+                resolve(null)
+                building = false
+            }, 500)
+        })
         await buildFile()
         hasChange = true
         let url = `http://${props.host}:${props.port}`
