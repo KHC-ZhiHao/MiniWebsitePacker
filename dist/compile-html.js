@@ -144,7 +144,8 @@ function compileHTML(html, params) {
             let content = getElementContent(script);
             if (content.trim()) {
                 let result = yield (0, compile_1.compileJs)(content, {
-                    mini: params.mini
+                    mini: params.mini,
+                    babel: params.prod
                 });
                 $(script).replaceWith(`<script>${result}</script>`);
             }
@@ -156,7 +157,8 @@ function compileHTML(html, params) {
             if (content.trim()) {
                 let result = yield (0, compile_1.compileCss)(content, {
                     mini: params.mini,
-                    variables: params.variables
+                    variables: params.variables,
+                    autoprefixer: params.prod
                 });
                 $(style).replaceWith(`<style>${result}</style>`);
             }

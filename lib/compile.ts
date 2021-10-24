@@ -7,24 +7,28 @@ import { minify } from "terser"
 
 type CompileJsOptions = {
     mini: boolean
+    babel: boolean
 }
 
 export const compileJs = async (code: string, options: CompileJsOptions) => {
-    let output: string = await new Promise((resolve, reject) => {
-        transform(code, {
-            presets: [
-                [
-                    '@babel/preset-env'
+    let output = code
+    if (options.babel) {
+        output = await new Promise((resolve, reject) => {
+            transform(code, {
+                presets: [
+                    [
+                        '@babel/preset-env'
+                    ]
                 ]
-            ]
-        }, (err, result) => {
-            if (err) {
-                reject(err)
-            } else {
-                resolve(result.code)
-            }
+            }, (err, result) => {
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve(result.code)
+                }
+            })
         })
-    })
+    }
     if (options.mini) {
         output = (await minify(output)).code
     }
@@ -33,6 +37,7 @@ export const compileJs = async (code: string, options: CompileJsOptions) => {
 
 type CompileCssOptions = {
     mini: boolean
+    autoprefixer: boolean
     variables: {
         [key: string]: any
     }
@@ -40,19 +45,22 @@ type CompileCssOptions = {
 
 export const compileCss = async (css: string, options: CompileCssOptions) => {
     let code = css.toString()
+    let result: any = {}
     for (let key in options.variables) {
         let text = escapeStringRegexp(`--${key}--`)
         let reg = new RegExp(text, 'g')
         code = code.replace(reg, options.variables[key])
     }
-    let post = postcss([
-        autoprefixer({
-            overrideBrowserslist: ['last 2 version', '> 1%', 'IE 10']
+    if (options.autoprefixer) {
+        let post = postcss([
+            autoprefixer({
+                overrideBrowserslist: ['last 2 version', '> 1%', 'IE 10']
+            })
+        ])
+        result = post.process(code, {
+            from: undefined
         })
-    ])
-    let result = post.process(code, {
-        from: undefined
-    })
+    }
     let output = result.css || code
     if (options.mini) {
         let clear = new CleanCss()

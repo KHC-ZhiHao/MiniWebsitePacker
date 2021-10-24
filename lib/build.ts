@@ -1,8 +1,9 @@
 import fsx from 'fs-extra'
-import path from 'path'
+import path, { resolve } from 'path'
 import imagemin from 'imagemin'
 import imageminJpegtran from 'imagemin-jpegtran'
 import imageminPngquant from 'imagemin-pngquant'
+import { Pawn } from 'pors'
 import { getDir } from './utils'
 import { compileHTML } from './compile-html'
 import { compileJs, compileCss } from './compile'
@@ -19,7 +20,8 @@ type Params = {
     }
 }
 
-async function build(params: Params) {
+function build(params: Params) {
+    const pawn = new Pawn(10)
     const outputFiles: Array<string> = []
     const variables = {
         ...params.config.variables || {},
@@ -41,59 +43,74 @@ async function build(params: Params) {
             return true
         }
     })
+    pawn.on('error', (error) => {
+        console.error(error)
+    })
     // 編譯檔案
     for (let file of outputFiles) {
         let data = path.parse(file)
         // html
         if (data.ext === '.html') {
-            console.log(`正在編譯HTML: ${data.name}${data.ext}`)
-            let html = fsx.readFileSync(file).toString()
-            let output = await compileHTML(html, {
-                file,
-                mini: params.mini,
-                rootDir: params.rootDir,
-                readonly: params.readonly,
-                hotReload: params.env === 'dev',
-                variables
+            pawn.addAsync(async() => {
+                console.log(`正在編譯HTML: ${data.name}${data.ext}`)
+                let html = fsx.readFileSync(file).toString()
+                let output = await compileHTML(html, {
+                    file,
+                    prod: params.env === 'prod',
+                    mini: params.mini,
+                    rootDir: params.rootDir,
+                    readonly: params.readonly,
+                    hotReload: params.env === 'dev',
+                    variables
+                })
+                fsx.writeFileSync(file, output)
             })
-            fsx.writeFileSync(file, output)
         }
         // image
         if (data.ext === '.png' || data.ext === '.jpg') {
             if (params.env === 'prod') {
-                console.log(`正在壓縮: ${data.name}${data.ext}`)
-                let buffer = fsx.readFileSync(file)
-                let result = await imagemin.buffer(buffer, {
-                    plugins: [
-                        imageminJpegtran(),
-                        imageminPngquant({
-                            quality: [0.6, 0.8]
-                        })
-                    ]
+                pawn.addAsync(async() => {
+                    console.log(`正在壓縮: ${data.name}${data.ext}`)
+                    let buffer = fsx.readFileSync(file)
+                    let result = await imagemin.buffer(buffer, {
+                        plugins: [
+                            imageminJpegtran(),
+                            imageminPngquant({
+                                quality: [0.6, 0.8]
+                            })
+                        ]
+                    })
+                    fsx.writeFileSync(file, result)
                 })
-                fsx.writeFileSync(file, result)
             }
         }
         // javascript
         if (data.ext === '.js') {
-            console.log(`正在編譯JS: ${data.name}${data.ext}`)
-            let code = fsx.readFileSync(file).toString()
-            let output: string = await compileJs(code, {
-                mini: params.mini
+            pawn.addAsync(async() => {
+                console.log(`正在編譯JS: ${data.name}${data.ext}`)
+                let code = fsx.readFileSync(file).toString()
+                let output: string = await compileJs(code, {
+                    mini: params.mini,
+                    babel: params.env === 'prod'
+                })
+                fsx.writeFileSync(file, output)
             })
-            fsx.writeFileSync(file, output)
         }
         // css
         if (data.ext === '.css') {
-            console.log(`正在編譯CSS: ${data.name}${data.ext}`)
-            let css = fsx.readFileSync(file).toString()
-            let result = await compileCss(css, {
-                mini: params.mini,
-                variables
+            pawn.addAsync(async() => {
+                console.log(`正在編譯CSS: ${data.name}${data.ext}`)
+                let css = fsx.readFileSync(file).toString()
+                let result = await compileCss(css, {
+                    mini: params.mini,
+                    variables,
+                    autoprefixer: params.env === 'prod'
+                })
+                fsx.writeFileSync(file, result)
             })
-            fsx.writeFileSync(file, result)
         }
     }
+    return new Promise(resolve => pawn.onEmpty(() => resolve(null)))
 }
 
 export default async function(params: Params) {

@@ -21,6 +21,8 @@
   "author": "khczhihao",
   "license": "ISC",
   "dependencies": {
+    "@babel/core": "7.12.13",
+    "@babel/preset-env": "7.12.13",
     "autoprefixer": "^10.2.4",
     "cheerio": "^1.0.0-rc.5",
     "clean-css": "^5.0.1",
@@ -33,12 +35,11 @@
     "imagemin": "^7.0.1",
     "imagemin-jpegtran": "^7.0.0",
     "imagemin-pngquant": "^9.0.1",
+    "pors": "^0.1.0",
     "postcss": "^8.2.5",
     "pretty": "^2.0.0",
     "terser": "^5.6.0",
-    "watch": "^1.0.2",
-    "@babel/core": "7.12.13",
-    "@babel/preset-env": "7.12.13"
+    "watch": "^1.0.2"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.24",

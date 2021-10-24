@@ -69,6 +69,7 @@ function randerTemplate(file: string, html: string, templates: Templates, variab
 
 type compileHTMLParams = {
     file: string
+    prod: boolean
     mini: boolean
     rootDir: string
     readonly: boolean
@@ -152,7 +153,8 @@ export async function compileHTML(html: string, params: compileHTMLParams): Prom
         let content = getElementContent(script)
         if (content.trim()) {
             let result = await compileJs(content, {
-                mini: params.mini
+                mini: params.mini,
+                babel: params.prod
             })
             $(script).replaceWith(`<script>${result}</script>`)
         }
@@ -164,7 +166,8 @@ export async function compileHTML(html: string, params: compileHTMLParams): Prom
         if (content.trim()) {
             let result = await compileCss(content, {
                 mini: params.mini,
-                variables: params.variables
+                variables: params.variables,
+                autoprefixer: params.prod
             })
             $(style).replaceWith(`<style>${result}</style>`)
         }

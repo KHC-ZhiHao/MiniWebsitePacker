@@ -20,22 +20,25 @@ const escape_string_regexp_1 = __importDefault(require("escape-string-regexp"));
 const core_1 = require("@babel/core");
 const terser_1 = require("terser");
 const compileJs = (code, options) => __awaiter(void 0, void 0, void 0, function* () {
-    let output = yield new Promise((resolve, reject) => {
-        (0, core_1.transform)(code, {
-            presets: [
-                [
-                    '@babel/preset-env'
+    let output = code;
+    if (options.babel) {
+        output = yield new Promise((resolve, reject) => {
+            (0, core_1.transform)(code, {
+                presets: [
+                    [
+                        '@babel/preset-env'
+                    ]
                 ]
-            ]
-        }, (err, result) => {
-            if (err) {
-                reject(err);
-            }
-            else {
-                resolve(result.code);
-            }
+            }, (err, result) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve(result.code);
+                }
+            });
         });
-    });
+    }
     if (options.mini) {
         output = (yield (0, terser_1.minify)(output)).code;
     }
@@ -44,19 +47,22 @@ const compileJs = (code, options) => __awaiter(void 0, void 0, void 0, function*
 exports.compileJs = compileJs;
 const compileCss = (css, options) => __awaiter(void 0, void 0, void 0, function* () {
     let code = css.toString();
+    let result = {};
     for (let key in options.variables) {
         let text = (0, escape_string_regexp_1.default)(`--${key}--`);
         let reg = new RegExp(text, 'g');
         code = code.replace(reg, options.variables[key]);
     }
-    let post = (0, postcss_1.default)([
-        (0, autoprefixer_1.default)({
-            overrideBrowserslist: ['last 2 version', '> 1%', 'IE 10']
-        })
-    ]);
-    let result = post.process(code, {
-        from: undefined
-    });
+    if (options.autoprefixer) {
+        let post = (0, postcss_1.default)([
+            (0, autoprefixer_1.default)({
+                overrideBrowserslist: ['last 2 version', '> 1%', 'IE 10']
+            })
+        ]);
+        result = post.process(code, {
+            from: undefined
+        });
+    }
     let output = result.css || code;
     if (options.mini) {
         let clear = new clean_css_1.default();

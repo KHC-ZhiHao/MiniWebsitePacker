@@ -47,9 +47,13 @@ function default_1(props) {
         }
         building = true;
         console.log('Building...');
-        yield new Promise(resolve => setTimeout(resolve, 500));
+        yield new Promise(resolve => {
+            setTimeout(() => {
+                resolve(null);
+                building = false;
+            }, 500);
+        });
         yield buildFile();
-        building = false;
         hasChange = true;
         let url = `http://${props.host}:${props.port}`;
         console.log(`Server正在運行中: ${url}`);
