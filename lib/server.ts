@@ -56,12 +56,10 @@ export default function(props: Props) {
         let url = `http://${props.host}:${props.port}`
         console.log(`Server正在運行中: ${url}`)
     })
-
     app.use(cors())
     app.use(express.static(props.outputDir, {
         extensions: ['html']
     }))
-
     app.post('/onchange', (req, res) => {
         res.json({
             result: hasChange
@@ -70,10 +68,8 @@ export default function(props: Props) {
             hasChange = false
         }
     })
-
     server.listen(props.port, props.host, () => {
         console.log(`Server運行成功`)
     })
-
     return server
 }

@@ -10,6 +10,8 @@ const server_1 = __importDefault(require("./server"));
 const build_1 = __importDefault(require("./build"));
 commander_1.default.version('0.0.2');
 commander_1.default.arguments('<mode> [name]');
+commander_1.default.option('--root', 'Code Source Folder.', './src');
+commander_1.default.option('--dist', 'Build Release Folder.', './dist');
 commander_1.default.option('--mini', 'Minify code.');
 commander_1.default.option('--readonly', 'Enable readonly mode.');
 commander_1.default.option('--conf <target>', 'Select Config File.', '');
@@ -17,8 +19,8 @@ commander_1.default.option('--lang <target>', 'Main language, default is zh.', '
 commander_1.default.option('--port <target>', 'Service prot, default is 8080.', '8080');
 commander_1.default.option('--host <target>', 'Service host, default is localhost.', 'localhost');
 commander_1.default.action((mode, name = 'my-project') => {
-    let rootDir = './src';
-    let outputDir = './dist';
+    let rootDir = commander_1.default.root;
+    let outputDir = commander_1.default.dist;
     let lang = commander_1.default.lang;
     let host = commander_1.default.host;
     let port = Number(commander_1.default.port);
