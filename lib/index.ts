@@ -7,10 +7,10 @@ import build from './build'
 
 program.version('0.0.2')
 program.arguments('<mode> [name]')
-program.option('--root', 'Code Source Folder.', './src')
-program.option('--dist', 'Build Release Folder.', './dist')
 program.option('--mini', 'Minify code.')
 program.option('--readonly', 'Enable readonly mode.')
+program.option('--root <target>', 'Code Source Folder.', './src')
+program.option('--dist <target>', 'Build Release Folder.', './dist')
 program.option('--conf <target>', 'Select Config File.', '')
 program.option('--lang <target>', 'Main language, default is zh.', 'zh')
 program.option('--port <target>', 'Service prot, default is 8080.', '8080')
