@@ -57,6 +57,7 @@ function build(params) {
                     mini: params.mini,
                     rootDir: params.rootDir,
                     readonly: params.readonly,
+                    readonlyHost: params.readonlyHost,
                     hotReload: params.env === 'dev',
                     variables
                 });

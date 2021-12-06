@@ -73,6 +73,7 @@ type compileHTMLParams = {
     mini: boolean
     rootDir: string
     readonly: boolean
+    readonlyHost: string
     hotReload: boolean
     variables: {
         [key: string]: any
@@ -188,7 +189,7 @@ export async function compileHTML(html: string, params: compileHTMLParams): Prom
     }
     // readonly
     if (params.readonly) {
-        output = htmlEncryption(output)
+        output = htmlEncryption(output, params.readonlyHost)
     }
     // hot reload
     if (params.hotReload) {

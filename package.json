@@ -1,6 +1,6 @@
 {
   "name": "mini-website-packer",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "建立靜態網頁用的簡單工具",
   "main": "index.js",
   "scripts": {

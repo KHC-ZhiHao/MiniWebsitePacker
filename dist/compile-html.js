@@ -179,7 +179,7 @@ function compileHTML(html, params) {
         }
         // readonly
         if (params.readonly) {
-            output = (0, utils_1.htmlEncryption)(output);
+            output = (0, utils_1.htmlEncryption)(output, params.readonlyHost);
         }
         // hot reload
         if (params.hotReload) {

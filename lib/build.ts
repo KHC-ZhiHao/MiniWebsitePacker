@@ -14,6 +14,7 @@ type Params = {
     mini: boolean
     rootDir: string
     readonly: boolean
+    readonlyHost: string
     outputDir: string
     config: {
         [key: string]: any
@@ -60,6 +61,7 @@ function build(params: Params) {
                     mini: params.mini,
                     rootDir: params.rootDir,
                     readonly: params.readonly,
+                    readonlyHost: params.readonlyHost,
                     hotReload: params.env === 'dev',
                     variables
                 })

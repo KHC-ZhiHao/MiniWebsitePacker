@@ -33,7 +33,8 @@ function default_1(props) {
             lang: props.lang,
             mini: false,
             rootDir: props.rootDir,
-            outputDir: props.outputDir
+            outputDir: props.outputDir,
+            readonlyHost: null
         });
     });
     let hasChange = false;

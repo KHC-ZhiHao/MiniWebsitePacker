@@ -29,7 +29,8 @@ export default function(props: Props) {
             lang: props.lang,
             mini: false,
             rootDir: props.rootDir,
-            outputDir: props.outputDir
+            outputDir: props.outputDir,
+            readonlyHost: null
         })
     }
 

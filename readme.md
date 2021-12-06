@@ -52,6 +52,14 @@ mini-website-packer build --mini --lang zh
 
 * 使用 --mini 即壓縮所有檔案
 
+**唯獨模式**
+
+打包出來的檔案會經過複雜的加密過程，但仍然可以透過 HTML 上線，可以做為展示模式使用。
+
+```bash
+mini-website-packer build --readonly --readonlyhost localhost
+```
+
 ## 說明
 
 ### 資料結構是固定的

@@ -28,20 +28,25 @@ const htmlHotreload = (html) => {
     `;
 };
 exports.htmlHotreload = htmlHotreload;
-const htmlEncryption = (html) => {
+const htmlEncryption = (html, readonlyHost) => {
     let id = Buffer.from(Date.now().toString()).toString('base64');
     let base64 = Buffer.from(html, 'utf8').toString('base64');
     let doc = `
         (function() {
             var a = \`${unescape(encodeURIComponent(base64))}\`
             var b = __c__(atob(a))
+            var g = \`${readonlyHost}\`
             __q__.write(decodeURIComponent(b))
+            setInterval(() => {
+                if (g && !location.host.match(g)) {
+                    document.write('');
+                }
+            }, 100)
         })()
     `;
     return `
         <script>
             (function (a, e) {
-                eval(atob(e(a)))
                 function endebug(off, code) {
                     if (!off) {
                         !function (e) {
@@ -94,6 +99,7 @@ const htmlEncryption = (html) => {
                         })
                     }
                 }
+                eval(atob(e(a)));
                 endebug(false, function () {
                     document.write('Readonly');
                 });

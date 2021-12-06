@@ -12,6 +12,7 @@ commander_1.default.version('0.0.2');
 commander_1.default.arguments('<mode> [name]');
 commander_1.default.option('--mini', 'Minify code.');
 commander_1.default.option('--readonly', 'Enable readonly mode.');
+commander_1.default.option('--readonlyhost <target>', 'Readonly mode only in target host.');
 commander_1.default.option('--root <target>', 'Code Source Folder.', './src');
 commander_1.default.option('--dist <target>', 'Build Release Folder.', './dist');
 commander_1.default.option('--conf <target>', 'Select Config File.', '');
@@ -25,6 +26,7 @@ commander_1.default.action((mode, name = 'my-project') => {
     let host = commander_1.default.host;
     let port = Number(commander_1.default.port);
     let readonly = !!commander_1.default.readonly;
+    let readonlyhost = commander_1.default.readonlyhost;
     if (mode === 'init') {
         fs_extra_1.default.copySync(`${__dirname}/../example`, `./${name}`);
         console.log('Inited');
@@ -42,7 +44,8 @@ commander_1.default.action((mode, name = 'my-project') => {
             readonly,
             mini: !!commander_1.default.mini,
             rootDir,
-            outputDir
+            outputDir,
+            readonlyHost: readonlyhost
         });
     }
     if (mode === 'serve') {

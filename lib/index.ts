@@ -9,6 +9,7 @@ program.version('0.0.2')
 program.arguments('<mode> [name]')
 program.option('--mini', 'Minify code.')
 program.option('--readonly', 'Enable readonly mode.')
+program.option('--readonlyhost <target>', 'Readonly mode only in target host.')
 program.option('--root <target>', 'Code Source Folder.', './src')
 program.option('--dist <target>', 'Build Release Folder.', './dist')
 program.option('--conf <target>', 'Select Config File.', '')
@@ -22,6 +23,7 @@ program.action((mode, name = 'my-project') => {
     let host: string = program.host
     let port: number = Number(program.port)
     let readonly = !!program.readonly
+    let readonlyhost: string = program.readonlyhost
     if (mode === 'init') {
         fsx.copySync(`${__dirname}/../example`, `./${name}`)
         console.log('Inited')
@@ -39,7 +41,8 @@ program.action((mode, name = 'my-project') => {
             readonly,
             mini: !!program.mini,
             rootDir,
-            outputDir
+            outputDir,
+            readonlyHost: readonlyhost
         })
     }
     if (mode === 'serve') {
