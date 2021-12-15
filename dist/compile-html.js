@@ -145,7 +145,7 @@ function compileHTML(html, params) {
             if (content.trim()) {
                 let result = yield (0, compile_1.compileJs)(content, {
                     mini: params.mini,
-                    babel: params.prod
+                    babel: params.babel
                 });
                 $(script).replaceWith(`<script>${result}</script>`);
             }
@@ -184,6 +184,10 @@ function compileHTML(html, params) {
         // hot reload
         if (params.hotReload) {
             output = (0, utils_1.htmlHotreload)(output);
+        }
+        // babel
+        if (params.babel) {
+            output = output.replace('<head>', `<head><script>${fs_extra_1.default.readFileSync('./polyfill.js').toString()}</script>`);
         }
         return params.mini ? output : (0, pretty_1.default)(output);
     });

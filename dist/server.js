@@ -31,6 +31,7 @@ function default_1(props) {
             env: 'dev',
             readonly: false,
             lang: props.lang,
+            babel: false,
             mini: false,
             rootDir: props.rootDir,
             outputDir: props.outputDir,

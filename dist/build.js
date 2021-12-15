@@ -53,6 +53,7 @@ function build(params) {
                 let html = fs_extra_1.default.readFileSync(file).toString();
                 let output = yield (0, compile_html_1.compileHTML)(html, {
                     file,
+                    babel: params.babel,
                     prod: params.env === 'prod',
                     mini: params.mini,
                     rootDir: params.rootDir,
@@ -89,7 +90,7 @@ function build(params) {
                 let code = fs_extra_1.default.readFileSync(file).toString();
                 let output = yield (0, compile_1.compileJs)(code, {
                     mini: params.mini,
-                    babel: params.env === 'prod'
+                    babel: params.babel
                 });
                 fs_extra_1.default.writeFileSync(file, output);
             }));

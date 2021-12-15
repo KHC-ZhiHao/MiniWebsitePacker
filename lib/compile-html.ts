@@ -71,6 +71,7 @@ type compileHTMLParams = {
     file: string
     prod: boolean
     mini: boolean
+    babel: boolean
     rootDir: string
     readonly: boolean
     readonlyHost: string
@@ -155,7 +156,7 @@ export async function compileHTML(html: string, params: compileHTMLParams): Prom
         if (content.trim()) {
             let result = await compileJs(content, {
                 mini: params.mini,
-                babel: params.prod
+                babel: params.babel
             })
             $(script).replaceWith(`<script>${result}</script>`)
         }
@@ -194,6 +195,10 @@ export async function compileHTML(html: string, params: compileHTMLParams): Prom
     // hot reload
     if (params.hotReload) {
         output = htmlHotreload(output)
+    }
+    // babel
+    if (params.babel) {
+        output = output.replace('<head>', `<head><script>${fsx.readFileSync('./polyfill.txt').toString()}</script>`)
     }
     return params.mini ? output : pretty(output)
 }

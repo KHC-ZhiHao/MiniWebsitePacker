@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import './polyfill.txt'
 import fsx from 'fs-extra'
 import program from 'commander'
 import server from './server'
@@ -8,6 +9,7 @@ import build from './build'
 program.version('0.0.2')
 program.arguments('<mode> [name]')
 program.option('--mini', 'Minify code.')
+program.option('--babel', 'Compile js with babel, can support es5.')
 program.option('--readonly', 'Enable readonly mode.')
 program.option('--readonlyhost <target>', 'Readonly mode only in target host.')
 program.option('--root <target>', 'Code Source Folder.', './src')
@@ -22,6 +24,7 @@ program.action((mode, name = 'my-project') => {
     let lang: string = program.lang
     let host: string = program.host
     let port: number = Number(program.port)
+    let babel = !!program.babel
     let readonly = !!program.readonly
     let readonlyhost: string = program.readonlyhost
     if (mode === 'init') {
@@ -38,6 +41,7 @@ program.action((mode, name = 'my-project') => {
             config: conf,
             env: 'prod',
             lang,
+            babel,
             readonly,
             mini: !!program.mini,
             rootDir,

@@ -27,6 +27,7 @@ export default function(props: Props) {
             env: 'dev',
             readonly: false,
             lang: props.lang,
+            babel: false,
             mini: false,
             rootDir: props.rootDir,
             outputDir: props.outputDir,

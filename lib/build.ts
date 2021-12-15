@@ -1,5 +1,5 @@
 import fsx from 'fs-extra'
-import path, { resolve } from 'path'
+import path from 'path'
 import imagemin from 'imagemin'
 import imageminJpegtran from 'imagemin-jpegtran'
 import imageminPngquant from 'imagemin-pngquant'
@@ -14,6 +14,7 @@ type Params = {
     mini: boolean
     rootDir: string
     readonly: boolean
+    babel: boolean
     readonlyHost: string
     outputDir: string
     config: {
@@ -57,6 +58,7 @@ function build(params: Params) {
                 let html = fsx.readFileSync(file).toString()
                 let output = await compileHTML(html, {
                     file,
+                    babel: params.babel,
                     prod: params.env === 'prod',
                     mini: params.mini,
                     rootDir: params.rootDir,
@@ -93,7 +95,7 @@ function build(params: Params) {
                 let code = fsx.readFileSync(file).toString()
                 let output: string = await compileJs(code, {
                     mini: params.mini,
-                    babel: params.env === 'prod'
+                    babel: params.babel
                 })
                 fsx.writeFileSync(file, output)
             })
