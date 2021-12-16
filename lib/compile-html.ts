@@ -196,9 +196,5 @@ export async function compileHTML(html: string, params: compileHTMLParams): Prom
     if (params.hotReload) {
         output = htmlHotreload(output)
     }
-    // babel
-    if (params.babel) {
-        output = output.replace('<head>', `<head><script>${fsx.readFileSync('./polyfill.txt').toString()}</script>`)
-    }
     return params.mini ? output : pretty(output)
 }

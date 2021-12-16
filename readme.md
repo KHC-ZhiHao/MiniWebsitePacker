@@ -47,10 +47,13 @@ mini-website-packer serve --lang zh
 打包後的結果會輸出在`dist`資料夾中，選項 mini 會壓縮文檔，選項 lang 則是選擇哪種語言作為主要語言，其他語言仍然會輸出自己的資料夾。
 
 ```bash
-mini-website-packer build --mini --lang zh
+mini-website-packer build --babel --mini --lang zh
 ```
 
-* 使用 --mini 即壓縮所有檔案
+* 使用 --mini 即壓縮所有檔案。
+* 使用 --babel 即支援相容舊瀏覽器。
+
+> 使用 babel mode 必須引用 polyfill，可參考 [cdn](https://cdnjs.com/libraries/babel-polyfill)
 
 **唯獨模式**
 
