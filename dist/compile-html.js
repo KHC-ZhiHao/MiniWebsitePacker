@@ -187,7 +187,7 @@ function compileHTML(html, params) {
         }
         // babel
         if (params.babel) {
-            output = output.replace('<head>', `<head><script>${fs_extra_1.default.readFileSync('./polyfill.js').toString()}</script>`);
+            output = output.replace('<head>', `<head><script>${fs_extra_1.default.readFileSync('./polyfill.txt').toString()}</script>`);
         }
         return params.mini ? output : (0, pretty_1.default)(output);
     });
