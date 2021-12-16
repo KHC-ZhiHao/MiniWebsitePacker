@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 
-import './polyfill.txt'
 import fsx from 'fs-extra'
 import program from 'commander'
 import server from './server'
 import build from './build'
 
-program.version('0.0.2')
+program.version('1.0.8')
 program.arguments('<mode> [name]')
 program.option('--mini', 'Minify code.')
 program.option('--babel', 'Compile js with babel, can support es5.')

@@ -53,7 +53,7 @@ mini-website-packer build --babel --mini --lang zh
 * 使用 --mini 即壓縮所有檔案。
 * 使用 --babel 即支援相容舊瀏覽器。
 
-> 使用 babel mode 必須引用 polyfill，可參考 [cdn](https://cdnjs.com/libraries/babel-polyfill)
+> 如果使用 babel mode 出現 `regeneratorRuntime is not defined` 相關問題，必須引用 polyfill，可參考 [cdn](https://cdnjs.com/libraries/babel-polyfill)
 
 **唯獨模式**
 
