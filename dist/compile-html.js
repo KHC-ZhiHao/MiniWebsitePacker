@@ -33,7 +33,7 @@ function clearComment(file, text) {
 }
 function randerVariables(html, variables) {
     for (let key in variables) {
-        let text = (0, escape_string_regexp_1.default)(`--${key}--`);
+        let text = escape_string_regexp_1.default(`--${key}--`);
         let reg = new RegExp(text, 'g');
         html = html.replace(reg, variables[key]);
     }
@@ -57,10 +57,10 @@ function randerTemplate(file, html, templates, variables) {
             if (template) {
                 let content = template.content.toString();
                 for (let key in element.attribs) {
-                    content = content.replace(new RegExp(`-${(0, escape_string_regexp_1.default)(key)}-`, 'g'), element.attribs[key]);
+                    content = content.replace(new RegExp(`-${escape_string_regexp_1.default(key)}-`, 'g'), element.attribs[key]);
                 }
                 let result = content.replace(/<slot>.*?<\/slot>/g, getElementContent(element));
-                let text = (0, escape_string_regexp_1.default)(element.name);
+                let text = escape_string_regexp_1.default(element.name);
                 let reg = new RegExp(`<${text}.*?<\/${text}>`, 's');
                 output = output.replace(reg, result);
                 matched = true;
@@ -110,7 +110,7 @@ function compileHTML(html, params) {
     return __awaiter(this, void 0, void 0, function* () {
         let output = html.toString();
         let templates = [];
-        let { templateDir, localDir } = (0, utils_1.getDir)(params.rootDir);
+        let { templateDir, localDir } = utils_1.getDir(params.rootDir);
         getAllFiles(templateDir).map(file => {
             let name = 't-' + file.replace('.html', '');
             let content = fs_extra_1.default.readFileSync(`${templateDir}/${file}`).toString();
@@ -143,7 +143,7 @@ function compileHTML(html, params) {
         for (let script of scripts) {
             let content = getElementContent(script);
             if (content.trim()) {
-                let result = yield (0, compile_1.compileJs)(content, {
+                let result = yield compile_1.compileJs(content, {
                     mini: params.mini,
                     babel: params.babel
                 });
@@ -155,7 +155,7 @@ function compileHTML(html, params) {
         for (let style of styles) {
             let content = getElementContent(style);
             if (content.trim()) {
-                let result = yield (0, compile_1.compileCss)(content, {
+                let result = yield compile_1.compileCss(content, {
                     mini: params.mini,
                     variables: params.variables,
                     autoprefixer: params.prod
@@ -179,13 +179,13 @@ function compileHTML(html, params) {
         }
         // readonly
         if (params.readonly) {
-            output = (0, utils_1.htmlEncryption)(output, params.readonlyHost);
+            output = utils_1.htmlEncryption(output, params.readonlyHost);
         }
         // hot reload
         if (params.hotReload) {
-            output = (0, utils_1.htmlHotreload)(output);
+            output = utils_1.htmlHotreload(output);
         }
-        return params.mini ? output : (0, pretty_1.default)(output);
+        return params.mini ? output : pretty_1.default(output);
     });
 }
 exports.compileHTML = compileHTML;

@@ -23,7 +23,7 @@ const compileJs = (code, options) => __awaiter(void 0, void 0, void 0, function*
     let output = code;
     if (options.babel) {
         output = yield new Promise((resolve, reject) => {
-            (0, core_1.transform)(code, {
+            core_1.transform(code, {
                 presets: [
                     [
                         '@babel/preset-env'
@@ -40,7 +40,7 @@ const compileJs = (code, options) => __awaiter(void 0, void 0, void 0, function*
         });
     }
     if (options.mini) {
-        output = (yield (0, terser_1.minify)(output)).code;
+        output = (yield terser_1.minify(output)).code;
     }
     return output;
 });
@@ -49,13 +49,13 @@ const compileCss = (css, options) => __awaiter(void 0, void 0, void 0, function*
     let code = css.toString();
     let result = {};
     for (let key in options.variables) {
-        let text = (0, escape_string_regexp_1.default)(`--${key}--`);
+        let text = escape_string_regexp_1.default(`--${key}--`);
         let reg = new RegExp(text, 'g');
         code = code.replace(reg, options.variables[key]);
     }
     if (options.autoprefixer) {
-        let post = (0, postcss_1.default)([
-            (0, autoprefixer_1.default)({
+        let post = postcss_1.default([
+            autoprefixer_1.default({
                 overrideBrowserslist: ['last 2 version', '> 1%', 'IE 10']
             })
         ]);
