@@ -1,6 +1,6 @@
 {
   "name": "mini-website-packer",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "建立靜態網頁用的簡單工具",
   "main": "index.js",
   "scripts": {
@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/KHC-ZhiHao/mini-website-packer#readme",
   "author": "khczhihao",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@babel/core": "7.12.13",
     "@babel/preset-env": "7.12.13",
