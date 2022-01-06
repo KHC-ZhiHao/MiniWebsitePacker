@@ -25,7 +25,7 @@ function build(params) {
     const pawn = new pors_1.Pawn(10);
     const outputFiles = [];
     const variables = Object.assign(Object.assign({}, params.config.variables || {}), { env: params.env, lang: params.lang });
-    const { staticDir, pageDir } = utils_1.getDir(params.rootDir);
+    const { staticDir, pageDir } = (0, utils_1.getDir)(params.rootDir);
     // 複製靜態檔案
     fs_extra_1.default.copySync(staticDir, params.outputDir + '/static', {
         filter: (src, dest) => {
@@ -51,7 +51,7 @@ function build(params) {
             pawn.addAsync(() => __awaiter(this, void 0, void 0, function* () {
                 console.log(`正在編譯HTML: ${data.name}${data.ext}`);
                 let html = fs_extra_1.default.readFileSync(file).toString();
-                let output = yield compile_html_1.compileHTML(html, {
+                let output = yield (0, compile_html_1.compileHTML)(html, {
                     file,
                     babel: params.babel,
                     prod: params.env === 'prod',
@@ -73,8 +73,8 @@ function build(params) {
                     let buffer = fs_extra_1.default.readFileSync(file);
                     let result = yield imagemin_1.default.buffer(buffer, {
                         plugins: [
-                            imagemin_jpegtran_1.default(),
-                            imagemin_pngquant_1.default({
+                            (0, imagemin_jpegtran_1.default)(),
+                            (0, imagemin_pngquant_1.default)({
                                 quality: [0.6, 0.8]
                             })
                         ]
@@ -88,7 +88,7 @@ function build(params) {
             pawn.addAsync(() => __awaiter(this, void 0, void 0, function* () {
                 console.log(`正在編譯JS: ${data.name}${data.ext}`);
                 let code = fs_extra_1.default.readFileSync(file).toString();
-                let output = yield compile_1.compileJs(code, {
+                let output = yield (0, compile_1.compileJs)(code, {
                     mini: params.mini,
                     babel: params.babel
                 });
@@ -100,7 +100,7 @@ function build(params) {
             pawn.addAsync(() => __awaiter(this, void 0, void 0, function* () {
                 console.log(`正在編譯CSS: ${data.name}${data.ext}`);
                 let css = fs_extra_1.default.readFileSync(file).toString();
-                let result = yield compile_1.compileCss(css, {
+                let result = yield (0, compile_1.compileCss)(css, {
                     mini: params.mini,
                     variables,
                     autoprefixer: params.env === 'prod'
@@ -118,7 +118,7 @@ function default_1(params) {
             fs_extra_1.default.removeSync(params.outputDir);
         }
         // 獲取所有語系檔案
-        let localDir = utils_1.getDir(params.rootDir).localDir;
+        let localDir = (0, utils_1.getDir)(params.rootDir).localDir;
         let langs = fs_extra_1.default.readdirSync(localDir).map(s => s.replace('.json', ''));
         for (let lang of langs) {
             if (lang === params.lang) {
