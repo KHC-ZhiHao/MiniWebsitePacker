@@ -8,7 +8,7 @@ const fs_extra_1 = __importDefault(require("fs-extra"));
 const commander_1 = __importDefault(require("commander"));
 const server_1 = __importDefault(require("./server"));
 const build_1 = __importDefault(require("./build"));
-commander_1.default.version('1.0.8');
+commander_1.default.version('1.2.0');
 commander_1.default.arguments('<mode> [name]');
 commander_1.default.option('--mini', 'Minify code.');
 commander_1.default.option('--babel', 'Compile js with babel, can support es5.');

@@ -1,10 +1,10 @@
 {
   "name": "mini-website-packer",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "建立靜態網頁用的簡單工具",
   "main": "index.js",
   "scripts": {
-    "link": "npm run build & npm link --force",
+    "tolink": "npm run build && npm link --force",
     "build": "tsc -b --force"
   },
   "bin": {

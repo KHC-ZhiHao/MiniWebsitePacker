@@ -5,7 +5,7 @@ import program from 'commander'
 import server from './server'
 import build from './build'
 
-program.version('1.0.8')
+program.version('1.2.0')
 program.arguments('<mode> [name]')
 program.option('--mini', 'Minify code.')
 program.option('--babel', 'Compile js with babel, can support es5.')

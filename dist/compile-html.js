@@ -47,6 +47,19 @@ function randerTemplate(file, html, templates, variables) {
         output = randerVariables(output, variables);
         // 渲染模板
         let $ = cheerio_1.default.load(output);
+        // js 渲染
+        let scripts = getNodes($('script'));
+        for (let script of scripts) {
+            let content = getElementContent(script);
+            if ('render' in script.attribs) {
+                let html = eval(`(function() {
+                    ${content}
+                })()`);
+                $(script).replaceWith(html);
+            }
+        }
+        output = $.html();
+        // 渲染模板
         let elements = [];
         $('*').each((index, element) => {
             elements.push(element);
@@ -109,12 +122,17 @@ function getAllFiles(root, child) {
 function compileHTML(html, params) {
     return __awaiter(this, void 0, void 0, function* () {
         let output = html.toString();
+        let onceOutput = [];
         let templates = [];
         let { templateDir, localDir } = (0, utils_1.getDir)(params.rootDir);
         getAllFiles(templateDir).map(file => {
             let name = 't-' + file.replace('.html', '');
             let content = fs_extra_1.default.readFileSync(`${templateDir}/${file}`).toString();
             let $ = cheerio_1.default.load(content);
+            let once = getNodes($('once'));
+            for (let temp of once) {
+                onceOutput.push(getElementContent(temp));
+            }
             let temps = getNodes($('template'));
             for (let temp of temps) {
                 let script = null;
@@ -130,6 +148,7 @@ function compileHTML(html, params) {
                 });
             }
         });
+        output = output + '\n' + onceOutput.join('\n');
         // 處理模板與變數
         output = randerTemplate(params.file, output, templates, params.variables);
         // 處理語系

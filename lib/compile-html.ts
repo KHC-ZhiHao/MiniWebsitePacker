@@ -40,6 +40,19 @@ function randerTemplate(file: string, html: string, templates: Templates, variab
         output = randerVariables(output, variables)
         // 渲染模板
         let $ = cheerio.load(output)
+        // js 渲染
+        let scripts = getNodes($('script'))
+        for (let script of scripts) {
+            let content = getElementContent(script)
+            if ('render' in script.attribs) {
+                let html = eval(`(function() {
+                    ${content}
+                })()`)
+                $(script).replaceWith(html)
+            }
+        }
+        output = $.html()
+        // 渲染模板
         let elements: cheerio.TagElement[] = []
         $('*').each((index, element: cheerio.TagElement) => {
             elements.push(element)
@@ -120,12 +133,17 @@ function getAllFiles(root: string, child?: string) {
 
 export async function compileHTML(html: string, params: compileHTMLParams): Promise<string> {
     let output = html.toString()
+    let onceOutput: string[] = []
     let templates: Templates = []
     let { templateDir, localDir } = getDir(params.rootDir)
     getAllFiles(templateDir).map(file => {
         let name = 't-' + file.replace('.html', '')
         let content = fsx.readFileSync(`${templateDir}/${file}`).toString()
         let $ = cheerio.load(content)
+        let once = getNodes($('once'))
+        for (let temp of once) {
+            onceOutput.push(getElementContent(temp))
+        }
         let temps = getNodes($('template'))
         for (let temp of temps) {
             let script = null
@@ -141,6 +159,7 @@ export async function compileHTML(html: string, params: compileHTMLParams): Prom
             })
         }
     })
+    output = output + '\n' + onceOutput.join('\n')
     // 處理模板與變數
     output = randerTemplate(params.file, output, templates, params.variables)
     // 處理語系

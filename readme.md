@@ -161,6 +161,70 @@ src/static/style/index.css
 <div>Hello，Dave<div>
 ```
 
+#### 渲染模板
+
+可以使用 javascript 的邏輯來渲染模板，只要在 script 中加入關鍵字 render 就會在執行階段中執行，使用方式如下：
+
+```html
+<!-- template/wrapper.html -->
+<template>
+    <div>
+        Hello，<slot></slot>
+    <div>
+</template>
+```
+
+```html
+<!-- pages/index.html -->
+<div>
+    <script render>
+        return '<t-wrapper>Dave</t-wrapper>'
+    </script>
+</div>
+```
+
+以下是編譯後的結果：
+
+> 這是以結果正確為主的示意結果，實際排版視編譯結果而定。
+
+```html
+<div>
+    <div>Hello，Dave<div>
+</div>
+```
+
+##### Handlebars
+
+由於 render 的執行過程是在編譯階段，你可以透過外部工具來建構你的應用程式，例如：handlebars。
+
+```bash
+npm install handlebars
+```
+
+```html
+<script render>
+    const handlebars = require('handlebars')
+    const template = `
+        {{#each peoples}}
+            <div>{{ this }}</div>
+        {{/each}}
+    `
+    return handlebars.compile(template)({
+        peoples: [
+            'dave',
+            'james'
+        ]
+    })
+</script>
+```
+
+以下是編譯後的結果：
+
+```html
+<div>dave</div>
+<div>james</div>
+```
+
 #### Props
 
 在**模板**中使用`-name-`意味著這個值必須從外部傳遞。
@@ -275,6 +339,45 @@ console.log(args)
 ```html
 <!-- pages/index.html -->
 <t-home|wrapper>Dave</t-home|wrapper>
+```
+
+#### Once Template
+
+可以在 template file 內使用使用 `once` 標籤，就只會執行一次。
+
+> 執行一次的程式碼最終會被編譯在程式碼最下方，請注意執行順序。
+
+```html
+<!-- template/wrapper.html -->
+<template>
+    <div>Hello<div>
+</template>
+
+<once>
+    <style>
+        div {
+            color: red
+        }
+    </style>
+</once>
+```
+
+```html
+<!-- pages/index.html -->
+<t-wrapper></t-wrapper>
+<t-wrapper></t-wrapper>
+```
+
+以下是編譯後的結果：
+
+```html
+<div>Hello<div>
+<div>Hello<div>
+<style>
+    div {
+        color: red
+    }
+</style>
 ```
 
 #### 語系
