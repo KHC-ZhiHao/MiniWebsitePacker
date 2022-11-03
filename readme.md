@@ -24,12 +24,8 @@ cd my-static-page
 npm init
 npm install mini-website-packer
 npx mini-website-packer init
+npx mini-website-packer serve --lang zh
 ```
-
-**建立符合Mini Website Packer的資料結構**
-
-> 如果不想在全域環境下安裝套件，也可以直接複製本專案的 example 資料夾進行開發。
-
 
 ## 開發與發佈
 
@@ -135,8 +131,6 @@ src/static/style/index.css
 使用`<t-filename></t-filename>`的標籤會在編譯過程中自動找尋`templates`檔案中相對應的檔案名稱，這個標籤**不支援任何Tag屬性**(例如: class)，且必須使用`<template></template>`包裝起來，並使用`<slot></slot>`語法來表明插槽位置。
 
 > 你也可以在模板中引用其他模板。
-
-> 由於是採用 cheerio 作為解讀工具，這個套件會自動處理html大綱結構，所以請避免在template中出現`<html>`、`<head>`、`<body>`這三種標籤。
 
 ```html
 <!-- template/wrapper.html -->
