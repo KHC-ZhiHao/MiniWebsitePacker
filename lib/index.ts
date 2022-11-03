@@ -27,7 +27,7 @@ program.action((mode, name = 'my-project') => {
     let readonly = !!program.readonly
     let readonlyhost: string = program.readonlyhost
     if (mode === 'init') {
-        fsx.copySync(`${__dirname}/../example`, `./${name}`)
+        fsx.copySync(`${__dirname}/../example`, `./`)
         console.log('Inited')
         process.exit()
     }

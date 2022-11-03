@@ -39,7 +39,8 @@ function randerTemplate(file: string, html: string, templates: Templates, variab
         output = clearComment(file, output)
         output = randerVariables(output, variables)
         // 渲染模板
-        let $ = cheerio.load(output)
+        // @ts-ignore
+        let $ = cheerio.load(output, null, false)
         // js 渲染
         let scripts = getNodes($('script'))
         for (let script of scripts) {
@@ -139,7 +140,8 @@ export async function compileHTML(html: string, params: compileHTMLParams): Prom
     getAllFiles(templateDir).map(file => {
         let name = 't-' + file.replace('.html', '')
         let content = fsx.readFileSync(`${templateDir}/${file}`).toString()
-        let $ = cheerio.load(content)
+        // @ts-ignore
+        let $ = cheerio.load(content, null, false)
         let once = getNodes($('once'))
         for (let temp of once) {
             onceOutput.push(getElementContent(temp))

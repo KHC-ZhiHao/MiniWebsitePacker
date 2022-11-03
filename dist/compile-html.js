@@ -46,7 +46,8 @@ function randerTemplate(file, html, templates, variables) {
         output = clearComment(file, output);
         output = randerVariables(output, variables);
         // 渲染模板
-        let $ = cheerio_1.default.load(output);
+        // @ts-ignore
+        let $ = cheerio_1.default.load(output, null, false);
         // js 渲染
         let scripts = getNodes($('script'));
         for (let script of scripts) {
@@ -128,7 +129,8 @@ function compileHTML(html, params) {
         getAllFiles(templateDir).map(file => {
             let name = 't-' + file.replace('.html', '');
             let content = fs_extra_1.default.readFileSync(`${templateDir}/${file}`).toString();
-            let $ = cheerio_1.default.load(content);
+            // @ts-ignore
+            let $ = cheerio_1.default.load(content, null, false);
             let once = getNodes($('once'));
             for (let temp of once) {
                 onceOutput.push(getElementContent(temp));

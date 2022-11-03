@@ -19,18 +19,17 @@
 ## 安裝
 
 ```bash
-npm install -g mini-website-packer
+mkdir my-static-page
+cd my-static-page
+npm init
+npm install mini-website-packer
+npx mini-website-packer init
 ```
 
 **建立符合Mini Website Packer的資料結構**
 
 > 如果不想在全域環境下安裝套件，也可以直接複製本專案的 example 資料夾進行開發。
 
-```bash
-mini-website-packer init myproject
-cd myproject
-npm install
-```
 
 ## 開發與發佈
 
@@ -39,7 +38,7 @@ npm install
 在開發模式中會有簡易的 hot reload 功能，選項 lang 可以指定使用哪種語言作為預覽。
 
 ```bash
-mini-website-packer serve --lang zh
+npx mini-website-packer serve --lang zh
 ```
 
 **打包程式**
@@ -47,7 +46,7 @@ mini-website-packer serve --lang zh
 打包後的結果會輸出在`dist`資料夾中，選項 mini 會壓縮文檔，選項 lang 則是選擇哪種語言作為主要語言，其他語言仍然會輸出自己的資料夾。
 
 ```bash
-mini-website-packer build --babel --mini --lang zh
+npx mini-website-packer build --babel --mini --lang zh
 ```
 
 * 使用 --mini 即壓縮所有檔案。
@@ -60,7 +59,7 @@ mini-website-packer build --babel --mini --lang zh
 打包出來的檔案會經過複雜的加密過程，但仍然可以透過 HTML 上線，可以做為展示模式使用。
 
 ```bash
-mini-website-packer build --readonly --readonlyhost localhost
+npx mini-website-packer build --readonly --readonlyhost localhost
 ```
 
 ## 說明
@@ -103,9 +102,9 @@ locales、pages、static、templates、package.json 這四個資料夾或檔案�
 
 ```bash
 # 部屬
-mini-website-packer build --conf ./src/config.json --lang zh
+npx mini-website-packer build --conf ./src/config.json --lang zh
 # 開發
-mini-website-packer serve --conf ./src/config.json --lang zh
+npx mini-website-packer serve --conf ./src/config.json --lang zh
 ```
 
 src/config.json

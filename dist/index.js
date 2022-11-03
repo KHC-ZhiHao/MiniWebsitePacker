@@ -30,7 +30,7 @@ commander_1.default.action((mode, name = 'my-project') => {
     let readonly = !!commander_1.default.readonly;
     let readonlyhost = commander_1.default.readonlyhost;
     if (mode === 'init') {
-        fs_extra_1.default.copySync(`${__dirname}/../example`, `./${name}`);
+        fs_extra_1.default.copySync(`${__dirname}/../example`, `./`);
         console.log('Inited');
         process.exit();
     }
