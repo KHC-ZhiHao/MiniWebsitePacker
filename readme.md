@@ -362,7 +362,7 @@ console.log(args)
 <t-home|wrapper>Dave</t-home|wrapper>
 ```
 
-#### Once Template
+#### Once
 
 可以在 template file 內使用使用 `once` 標籤，就只會執行一次。
 
@@ -397,6 +397,42 @@ console.log(args)
 <style>
     div {
         color: red
+    }
+</style>
+```
+
+#### Ref ID
+
+在 template file 中如果使用 ref 屬性，那會在獲取該 template 階段的時候配置一組隨機 id ，並取代該檔案所有的 `ref--{id}` 宣告。
+
+```html
+<template>
+    <div ref="click">
+        Click Me!
+    <div>
+    <script>
+        document.getElementById('ref--click').addEventListener('click', () => alert('hello!'))
+    </script>
+    <style>
+        #ref--click {
+            cursor: pointer;
+        }
+    </style>
+</template>
+```
+
+以下是編譯後的結果：
+
+```html
+<div id="click-qkgepor">
+    Click Me!
+<div>
+<script>
+    document.getElementById('click-qkgepor').addEventListener('click', () => alert('hello!'))
+</script>
+<style>
+    #click-qkgepor {
+        cursor: pointer;
     }
 </style>
 ```

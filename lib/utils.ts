@@ -1,3 +1,11 @@
+export const commentDelimiter = (comment: string) => {
+    return `
+        <!--|||-->
+        <!-- ${comment} -->
+        <!--|||-->
+    `.trim()
+}
+
 export const getDir = (root) => {
     return {
         rootDir: root,
@@ -10,6 +18,7 @@ export const getDir = (root) => {
 
 export const htmlHotreload = (html: string) => {
     return html + `
+        ${commentDelimiter('Hot Reload')}
         <script>
             setInterval(() => {
                 let oReq = new XMLHttpRequest()
@@ -20,7 +29,7 @@ export const htmlHotreload = (html: string) => {
                     })
                     oReq.open('POST', '/onchange')
                     oReq.send()
-            }, 1500)
+            }, 1000)
         </script>
     `
 }

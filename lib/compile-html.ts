@@ -2,11 +2,12 @@ import fsx from 'fs-extra'
 import pretty from 'pretty'
 import cheerio from 'cheerio'
 import htmlMinifier from 'html-minifier'
+import shortid from 'shortid'
 import escapeStringRegexp from 'escape-string-regexp'
 import handlebars from 'handlebars'
 import { text } from 'power-helper'
 import { compileCss, compileJs } from './compile'
-import { htmlHotreload, htmlEncryption, getDir } from './utils'
+import { htmlHotreload, htmlEncryption, getDir, commentDelimiter } from './utils'
 
 function clearComment(file: string, text: string) {
     let lines = text.split('\n')
@@ -34,6 +35,20 @@ type Templates = Array<{
     content: string
     isHandlebars: boolean
 }>
+
+function refReplace(content: string) {
+    // @ts-ignore
+    let $ = cheerio.load(content, null, false)
+    $('*').each((index, element: cheerio.TagElement) => {
+        let ref = element.attribs?.ref
+        if (ref) {
+            let uid = `${ref}-${shortid()}`
+            content = content.replace(new RegExp(escapeStringRegexp(`ref="${ref}"`), 'g'), `id="${uid}"`)
+            content = content.replace(new RegExp(escapeStringRegexp(`ref--${ref}`), 'g'), uid)
+        }
+    })
+    return content
+}
 
 async function randerTemplate(file: string, html: string, templates: Templates, variables: any, renderData: any, isHandlebars: boolean) {
     let output = html.toString()
@@ -75,7 +90,15 @@ async function randerTemplate(file: string, html: string, templates: Templates, 
                 for (let key in element.attribs) {
                     content = content.replace(new RegExp(`-${escapeStringRegexp(key)}-`, 'g'), element.attribs[key])
                 }
+                content = refReplace(content)
                 let result = content.replace(/<slot>.*?<\/slot>/g, getElementContent(element))
+                if (variables.env === 'dev') {
+                    let vars = Object.entries(element.attribs)
+                    result = `
+                        ${commentDelimiter(vars.length ? template.name + `:${vars.map(e => `${e[0]}=${e[1]}`).join()}` : template.name)}
+                        ${result}
+                    `.trim()
+                }
                 let text = escapeStringRegexp(element.name)
                 let reg = new RegExp(`<${text}.*?<\/${text}>`, 's')
                 output = output.replace(reg, result)
@@ -90,7 +113,7 @@ async function randerTemplate(file: string, html: string, templates: Templates, 
     return output
 }
 
-type compileHTMLParams = {
+type CompileHTMLParams = {
     file: string
     prod: boolean
     mini: boolean
@@ -119,7 +142,7 @@ function getElementContent(element: cheerio.TagElement, script?: string, scriptP
             </script>
         `
     }
-    return html
+    return html.trim()
 }
 
 function getNodes(io: cheerio.Cheerio): cheerio.TagElement[]  {
@@ -143,7 +166,7 @@ function getAllFiles(root: string, child?: string) {
     return output
 }
 
-export async function compileHTML(html: string, params: compileHTMLParams): Promise<string> {
+export async function compileHTML(html: string, params: CompileHTMLParams): Promise<string> {
     // @ts-ignore
     global.mwp = {
         variables: params.variables,
@@ -155,7 +178,8 @@ export async function compileHTML(html: string, params: compileHTMLParams): Prom
     let templates: Templates = []
     let { templateDir, localDir } = getDir(params.rootDir)
     getAllFiles(templateDir).map((file: string) => {
-        let name = 't-' + file.replace('.html', '').replace('.hbs', '')
+        let fileName = file.replace('.html', '').replace('.hbs', '')
+        let name = 't-' + fileName
         let content = fsx.readFileSync(`${templateDir}/${file}`).toString()
         // @ts-ignore
         let $ = cheerio.load(content, null, false)
@@ -163,28 +187,50 @@ export async function compileHTML(html: string, params: compileHTMLParams): Prom
         let isHandlebars = text.lastMatch(file, '.hbs')
         for (let temp of once) {
             onceOutput.push({
-                name: '',
+                name: `once: ${name}`,
                 isHandlebars,
                 content: getElementContent(temp)
             })
         }
         let temps = getNodes($('template'))
-        for (let temp of temps) {
-            let script = null
-            let templateScript = temp.attribs.script
-            if (templateScript != null) {
-                script = fsx.readFileSync(`${templateDir}/${file.replace('.html', '')}.js`).toString()
+        if (temps.length > 0) {
+            for (let temp of temps) {
+                let script = null
+                let templateScript = temp.attribs.script
+                if (templateScript != null) {
+                    script = fsx.readFileSync(`${templateDir}/${fileName}.js`).toString()
+                }
+                let templateName = (temp.attribs.name ? `${name}.${temp.attribs.name}` : name).replace('/', '|')
+                console.log('模板:', templateName)
+                templates.push({
+                    name: templateName,
+                    isHandlebars,
+                    content: getElementContent(temp, script, templateScript)
+                })
             }
-            let templateName = (temp.attribs.name ? `${name}.${temp.attribs.name}` : name).replace('/', '|')
-            console.log('模板', templateName)
+        } else {
+            console.log('模板:', name)
             templates.push({
-                name: templateName,
-                isHandlebars,
-                content: getElementContent(temp, script, templateScript)
+                name,
+                isHandlebars: false,
+                content: ''
             })
         }
     })
-    output = output + '\n' + onceOutput.map(e => e.isHandlebars ? handlebars.compile(e.content)(params.renderData) : e.content).join('\n')
+    output = output + '\n' + onceOutput.map(e => {
+        let content = e.content
+        if (e.isHandlebars) {
+            handlebars.compile(content)(params.renderData)
+        }
+        content = refReplace(content)
+        if (params.variables.env === 'dev') {
+            content = `
+                ${commentDelimiter(e.name)}
+                ${content}
+            `.trim()
+        }
+        return content
+    }).join('\n')
     // 處理模板與變數
     output = await randerTemplate(params.file, output, templates, params.variables, params.renderData, params.isHandlebars)
     // 處理語系

@@ -1,6 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.htmlEncryption = exports.htmlHotreload = exports.getDir = void 0;
+exports.htmlEncryption = exports.htmlHotreload = exports.getDir = exports.commentDelimiter = void 0;
+const commentDelimiter = (comment) => {
+    return `
+        <!--|||-->
+        <!-- ${comment} -->
+        <!--|||-->
+    `.trim();
+};
+exports.commentDelimiter = commentDelimiter;
 const getDir = (root) => {
     return {
         rootDir: root,
@@ -13,6 +21,7 @@ const getDir = (root) => {
 exports.getDir = getDir;
 const htmlHotreload = (html) => {
     return html + `
+        ${(0, exports.commentDelimiter)('Hot Reload')}
         <script>
             setInterval(() => {
                 let oReq = new XMLHttpRequest()
@@ -23,7 +32,7 @@ const htmlHotreload = (html) => {
                     })
                     oReq.open('POST', '/onchange')
                     oReq.send()
-            }, 1500)
+            }, 1000)
         </script>
     `;
 };
