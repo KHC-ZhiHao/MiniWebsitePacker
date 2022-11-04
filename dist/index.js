@@ -48,6 +48,7 @@ commander_1.default.action((mode, name = 'my-project') => {
             mini: !!commander_1.default.mini,
             rootDir,
             outputDir,
+            onlyDefLang: false,
             readonlyHost: readonlyhost
         });
     }

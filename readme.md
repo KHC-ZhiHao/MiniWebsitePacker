@@ -107,8 +107,13 @@ src/config.json
 
 ```json
 {
+    // variables 會將變數塞入所有檔案
     "variables": {
         "primary": "red"
+    },
+    // renderData 只會在渲染階段注入全域變數或是 Handlebars 變數。
+    "renderData": {
+        "users": ["dave", "james"]
     }
 }
 ```
@@ -148,10 +153,29 @@ src/static/style/index.css
 
 以下是編譯後的結果：
 
-> 這是以結果正確為主的示意結果，實際排版視編譯結果而定。
-
 ```html
 <div>Hello，Dave<div>
+```
+
+#### Handlebars
+
+本庫原生支援 [Handlebars](https://handlebarsjs.com/)，只要將`.html`檔案改為`.hbs`副檔名即可啟用，可以借助該模板工具的邏輯來建構你的靜態網頁。
+
+> 所有的 `.hbs` 檔案吃的變數都來自 `config.renderData`。
+
+```html
+<template>
+    {{#each users}}
+        <div>{{this}}</div>
+    {{/each}}
+</template>
+```
+
+以下是編譯後的結果：
+
+```html
+<div>dave</div>
+<div>james</div>
 ```
 
 #### 渲染模板
@@ -178,35 +202,39 @@ src/static/style/index.css
 
 以下是編譯後的結果：
 
-> 這是以結果正確為主的示意結果，實際排版視編譯結果而定。
-
 ```html
 <div>
     <div>Hello，Dave<div>
 </div>
 ```
 
-##### Handlebars
-
-由於 render 的執行過程是在編譯階段，你可以透過外部工具來建構你的應用程式，例如：handlebars。
-
-```bash
-npm install handlebars
-```
+你可以在此階段獲取到 `mwp` 物件，內部包含了 `variables`, `renderData`, `handlebars` 三個物件。
 
 ```html
 <script render>
-    const handlebars = require('handlebars')
+    return `<div>${mwp.variables.primary}</div>`
+</script>
+```
+
+以下是編譯後的結果：
+
+```html
+<div>red</div>
+```
+
+由於 render 的執行過程是在編譯階段，且支援`非同步`函數，你可以透過外部工具來建構你的應用程式，例如：
+
+```html
+<script render>
+    const axios = require('axios')
+    const users = await axios.get('./users')
     const template = `
         {{#each peoples}}
             <div>{{ this }}</div>
         {{/each}}
     `
-    return handlebars.compile(template)({
-        peoples: [
-            'dave',
-            'james'
-        ]
+    return mwp.handlebars.compile(template)({
+        peoples: users.data
     })
 </script>
 ```
@@ -394,8 +422,6 @@ console.log(args)
 ```
 
 以下是編譯後的結果：
-
-> 這是以結果正確為主的示意結果，實際排版視編譯結果而定。
 
 ```html
 <div>Hello Dave<div>

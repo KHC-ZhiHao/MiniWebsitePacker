@@ -33,6 +33,7 @@ function default_1(props) {
             lang: props.lang,
             babel: false,
             mini: false,
+            onlyDefLang: true,
             rootDir: props.rootDir,
             outputDir: props.outputDir,
             readonlyHost: null
@@ -62,7 +63,7 @@ function default_1(props) {
     }));
     app.use((0, cors_1.default)());
     app.use(express_1.default.static(props.outputDir, {
-        extensions: ['html']
+        extensions: ['html', 'hbs']
     }));
     app.post('/onchange', (req, res) => {
         res.json({

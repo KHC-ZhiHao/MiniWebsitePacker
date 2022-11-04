@@ -29,6 +29,7 @@ export default function(props: Props) {
             lang: props.lang,
             babel: false,
             mini: false,
+            onlyDefLang: true,
             rootDir: props.rootDir,
             outputDir: props.outputDir,
             readonlyHost: null
@@ -60,7 +61,7 @@ export default function(props: Props) {
     })
     app.use(cors())
     app.use(express.static(props.outputDir, {
-        extensions: ['html']
+        extensions: ['html', 'hbs']
     }))
     app.post('/onchange', (req, res) => {
         res.json({

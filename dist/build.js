@@ -47,7 +47,7 @@ function build(params) {
     for (let file of outputFiles) {
         let data = path_1.default.parse(file);
         // html
-        if (data.ext === '.html') {
+        if (data.ext === '.html' || data.ext === '.hbs') {
             pawn.addAsync(() => __awaiter(this, void 0, void 0, function* () {
                 console.log(`正在編譯HTML: ${data.name}${data.ext}`);
                 let html = fs_extra_1.default.readFileSync(file).toString();
@@ -60,9 +60,17 @@ function build(params) {
                     readonly: params.readonly,
                     readonlyHost: params.readonlyHost,
                     hotReload: params.env === 'dev',
+                    renderData: params.config.renderData || {},
+                    isHandlebars: data.ext === '.hbs',
                     variables
                 });
-                fs_extra_1.default.writeFileSync(file, output);
+                if (data.ext === '.hbs') {
+                    fs_extra_1.default.unlinkSync(file);
+                    fs_extra_1.default.writeFileSync(file.slice(0, -4) + '.html', output);
+                }
+                else {
+                    fs_extra_1.default.writeFileSync(file, output);
+                }
             }));
         }
         // image
@@ -124,7 +132,7 @@ function default_1(params) {
             if (lang === params.lang) {
                 yield build(params);
             }
-            else {
+            else if (params.onlyDefLang === false) {
                 yield build(Object.assign(Object.assign({}, params), { outputDir: `${params.outputDir}/${lang}` }));
             }
         }

@@ -3,8 +3,10 @@ import pretty from 'pretty'
 import cheerio from 'cheerio'
 import htmlMinifier from 'html-minifier'
 import escapeStringRegexp from 'escape-string-regexp'
-import { htmlHotreload, htmlEncryption, getDir } from './utils'
+import handlebars from 'handlebars'
+import { text } from 'power-helper'
 import { compileCss, compileJs } from './compile'
+import { htmlHotreload, htmlEncryption, getDir } from './utils'
 
 function clearComment(file: string, text: string) {
     let lines = text.split('\n')
@@ -30,9 +32,10 @@ function randerVariables(html: string, variables: { [key: string]: any }) {
 type Templates = Array<{
     name: string
     content: string
+    isHandlebars: boolean
 }>
 
-function randerTemplate(file: string, html: string, templates: Templates, variables: any) {
+async function randerTemplate(file: string, html: string, templates: Templates, variables: any, renderData: any, isHandlebars: boolean) {
     let output = html.toString()
     while (true) {
         // 清除系統註解、替換環境參數
@@ -46,13 +49,16 @@ function randerTemplate(file: string, html: string, templates: Templates, variab
         for (let script of scripts) {
             let content = getElementContent(script)
             if ('render' in script.attribs) {
-                let html = eval(`(function() {
+                let html = await eval(`(async function() {
                     ${content}
                 })()`)
                 $(script).replaceWith(html)
             }
         }
         output = $.html()
+        if (isHandlebars) {
+            output = handlebars.compile(output)(renderData)
+        }
         // 渲染模板
         let elements: cheerio.TagElement[] = []
         $('*').each((index, element: cheerio.TagElement) => {
@@ -63,6 +69,9 @@ function randerTemplate(file: string, html: string, templates: Templates, variab
             let template = templates.find(e => e.name === element.name)
             if (template) {
                 let content = template.content.toString()
+                if (template.isHandlebars) {
+                    content = handlebars.compile(content)(renderData)
+                }
                 for (let key in element.attribs) {
                     content = content.replace(new RegExp(`-${escapeStringRegexp(key)}-`, 'g'), element.attribs[key])
                 }
@@ -90,6 +99,8 @@ type compileHTMLParams = {
     readonly: boolean
     readonlyHost: string
     hotReload: boolean
+    isHandlebars: boolean
+    renderData: Record<string, any>
     variables: {
         [key: string]: any
         env: string
@@ -133,18 +144,29 @@ function getAllFiles(root: string, child?: string) {
 }
 
 export async function compileHTML(html: string, params: compileHTMLParams): Promise<string> {
+    // @ts-ignore
+    global.mwp = {
+        variables: params.variables,
+        renderData: params.renderData,
+        handlebars
+    }
     let output = html.toString()
-    let onceOutput: string[] = []
+    let onceOutput: Templates = []
     let templates: Templates = []
     let { templateDir, localDir } = getDir(params.rootDir)
-    getAllFiles(templateDir).map(file => {
-        let name = 't-' + file.replace('.html', '')
+    getAllFiles(templateDir).map((file: string) => {
+        let name = 't-' + file.replace('.html', '').replace('.hbs', '')
         let content = fsx.readFileSync(`${templateDir}/${file}`).toString()
         // @ts-ignore
         let $ = cheerio.load(content, null, false)
         let once = getNodes($('once'))
+        let isHandlebars = text.lastMatch(file, '.hbs')
         for (let temp of once) {
-            onceOutput.push(getElementContent(temp))
+            onceOutput.push({
+                name: '',
+                isHandlebars,
+                content: getElementContent(temp)
+            })
         }
         let temps = getNodes($('template'))
         for (let temp of temps) {
@@ -157,17 +179,18 @@ export async function compileHTML(html: string, params: compileHTMLParams): Prom
             console.log('模板', templateName)
             templates.push({
                 name: templateName,
+                isHandlebars,
                 content: getElementContent(temp, script, templateScript)
             })
         }
     })
-    output = output + '\n' + onceOutput.join('\n')
+    output = output + '\n' + onceOutput.map(e => e.isHandlebars ? handlebars.compile(e.content)(params.renderData) : e.content).join('\n')
     // 處理模板與變數
-    output = randerTemplate(params.file, output, templates, params.variables)
+    output = await randerTemplate(params.file, output, templates, params.variables, params.renderData, params.isHandlebars)
     // 處理語系
     let locale = JSON.parse(fsx.readFileSync(`${localDir}/${params.variables.lang}.json`).toString())
     for (let key in locale) {
-        output = output.replace(`{${key}}`, locale[key])
+        output = output.replace(new RegExp(`{${escapeStringRegexp(key)}}`, 'g'), locale[key])
     }
     // 解讀 js
     let $ = cheerio.load(output)

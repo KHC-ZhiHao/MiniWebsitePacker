@@ -17,6 +17,7 @@ type Params = {
     babel: boolean
     readonlyHost: string
     outputDir: string
+    onlyDefLang: boolean
     config: {
         [key: string]: any
     }
@@ -52,7 +53,7 @@ function build(params: Params) {
     for (let file of outputFiles) {
         let data = path.parse(file)
         // html
-        if (data.ext === '.html') {
+        if (data.ext === '.html' || data.ext === '.hbs') {
             pawn.addAsync(async() => {
                 console.log(`正在編譯HTML: ${data.name}${data.ext}`)
                 let html = fsx.readFileSync(file).toString()
@@ -65,9 +66,16 @@ function build(params: Params) {
                     readonly: params.readonly,
                     readonlyHost: params.readonlyHost,
                     hotReload: params.env === 'dev',
+                    renderData: params.config.renderData || {},
+                    isHandlebars: data.ext === '.hbs',
                     variables
                 })
-                fsx.writeFileSync(file, output)
+                if (data.ext === '.hbs') {
+                    fsx.unlinkSync(file)
+                    fsx.writeFileSync(file.slice(0, -4) + '.html', output)
+                } else {
+                    fsx.writeFileSync(file, output)
+                }
             })
         }
         // image
@@ -128,7 +136,7 @@ export default async function(params: Params) {
     for (let lang of langs) {
         if (lang === params.lang) {
             await build(params)
-        } else {
+        } else if (params.onlyDefLang === false) {
             await build({
                 ...params,
                 outputDir: `${params.outputDir}/${lang}`

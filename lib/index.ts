@@ -45,6 +45,7 @@ program.action((mode, name = 'my-project') => {
             mini: !!program.mini,
             rootDir,
             outputDir,
+            onlyDefLang: false,
             readonlyHost: readonlyhost
         })
     }

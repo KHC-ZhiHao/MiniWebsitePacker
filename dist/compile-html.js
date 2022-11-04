@@ -18,8 +18,10 @@ const pretty_1 = __importDefault(require("pretty"));
 const cheerio_1 = __importDefault(require("cheerio"));
 const html_minifier_1 = __importDefault(require("html-minifier"));
 const escape_string_regexp_1 = __importDefault(require("escape-string-regexp"));
-const utils_1 = require("./utils");
+const handlebars_1 = __importDefault(require("handlebars"));
+const power_helper_1 = require("power-helper");
 const compile_1 = require("./compile");
+const utils_1 = require("./utils");
 function clearComment(file, text) {
     let lines = text.split('\n');
     for (let i = 0; i < lines.length; i++) {
@@ -39,53 +41,61 @@ function randerVariables(html, variables) {
     }
     return html;
 }
-function randerTemplate(file, html, templates, variables) {
-    let output = html.toString();
-    while (true) {
-        // 清除系統註解、替換環境參數
-        output = clearComment(file, output);
-        output = randerVariables(output, variables);
-        // 渲染模板
-        // @ts-ignore
-        let $ = cheerio_1.default.load(output, null, false);
-        // js 渲染
-        let scripts = getNodes($('script'));
-        for (let script of scripts) {
-            let content = getElementContent(script);
-            if ('render' in script.attribs) {
-                let html = eval(`(function() {
+function randerTemplate(file, html, templates, variables, renderData, isHandlebars) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let output = html.toString();
+        while (true) {
+            // 清除系統註解、替換環境參數
+            output = clearComment(file, output);
+            output = randerVariables(output, variables);
+            // 渲染模板
+            // @ts-ignore
+            let $ = cheerio_1.default.load(output, null, false);
+            // js 渲染
+            let scripts = getNodes($('script'));
+            for (let script of scripts) {
+                let content = getElementContent(script);
+                if ('render' in script.attribs) {
+                    let html = yield eval(`(async function() {
                     ${content}
                 })()`);
-                $(script).replaceWith(html);
-            }
-        }
-        output = $.html();
-        // 渲染模板
-        let elements = [];
-        $('*').each((index, element) => {
-            elements.push(element);
-        });
-        let matched = false;
-        for (let element of elements) {
-            let template = templates.find(e => e.name === element.name);
-            if (template) {
-                let content = template.content.toString();
-                for (let key in element.attribs) {
-                    content = content.replace(new RegExp(`-${(0, escape_string_regexp_1.default)(key)}-`, 'g'), element.attribs[key]);
+                    $(script).replaceWith(html);
                 }
-                let result = content.replace(/<slot>.*?<\/slot>/g, getElementContent(element));
-                let text = (0, escape_string_regexp_1.default)(element.name);
-                let reg = new RegExp(`<${text}.*?<\/${text}>`, 's');
-                output = output.replace(reg, result);
-                matched = true;
+            }
+            output = $.html();
+            if (isHandlebars) {
+                output = handlebars_1.default.compile(output)(renderData);
+            }
+            // 渲染模板
+            let elements = [];
+            $('*').each((index, element) => {
+                elements.push(element);
+            });
+            let matched = false;
+            for (let element of elements) {
+                let template = templates.find(e => e.name === element.name);
+                if (template) {
+                    let content = template.content.toString();
+                    if (template.isHandlebars) {
+                        content = handlebars_1.default.compile(content)(renderData);
+                    }
+                    for (let key in element.attribs) {
+                        content = content.replace(new RegExp(`-${(0, escape_string_regexp_1.default)(key)}-`, 'g'), element.attribs[key]);
+                    }
+                    let result = content.replace(/<slot>.*?<\/slot>/g, getElementContent(element));
+                    let text = (0, escape_string_regexp_1.default)(element.name);
+                    let reg = new RegExp(`<${text}.*?<\/${text}>`, 's');
+                    output = output.replace(reg, result);
+                    matched = true;
+                    break;
+                }
+            }
+            if (matched === false) {
                 break;
             }
         }
-        if (matched === false) {
-            break;
-        }
-    }
-    return output;
+        return output;
+    });
 }
 function getElementContent(element, script, scriptParams) {
     let html = element.children.map(e => cheerio_1.default.html(e)).join('').trim();
@@ -122,18 +132,29 @@ function getAllFiles(root, child) {
 }
 function compileHTML(html, params) {
     return __awaiter(this, void 0, void 0, function* () {
+        // @ts-ignore
+        global.mwp = {
+            variables: params.variables,
+            renderData: params.renderData,
+            handlebars: handlebars_1.default
+        };
         let output = html.toString();
         let onceOutput = [];
         let templates = [];
         let { templateDir, localDir } = (0, utils_1.getDir)(params.rootDir);
-        getAllFiles(templateDir).map(file => {
-            let name = 't-' + file.replace('.html', '');
+        getAllFiles(templateDir).map((file) => {
+            let name = 't-' + file.replace('.html', '').replace('.hbs', '');
             let content = fs_extra_1.default.readFileSync(`${templateDir}/${file}`).toString();
             // @ts-ignore
             let $ = cheerio_1.default.load(content, null, false);
             let once = getNodes($('once'));
+            let isHandlebars = power_helper_1.text.lastMatch(file, '.hbs');
             for (let temp of once) {
-                onceOutput.push(getElementContent(temp));
+                onceOutput.push({
+                    name: '',
+                    isHandlebars,
+                    content: getElementContent(temp)
+                });
             }
             let temps = getNodes($('template'));
             for (let temp of temps) {
@@ -146,17 +167,18 @@ function compileHTML(html, params) {
                 console.log('模板', templateName);
                 templates.push({
                     name: templateName,
+                    isHandlebars,
                     content: getElementContent(temp, script, templateScript)
                 });
             }
         });
-        output = output + '\n' + onceOutput.join('\n');
+        output = output + '\n' + onceOutput.map(e => e.isHandlebars ? handlebars_1.default.compile(e.content)(params.renderData) : e.content).join('\n');
         // 處理模板與變數
-        output = randerTemplate(params.file, output, templates, params.variables);
+        output = yield randerTemplate(params.file, output, templates, params.variables, params.renderData, params.isHandlebars);
         // 處理語系
         let locale = JSON.parse(fs_extra_1.default.readFileSync(`${localDir}/${params.variables.lang}.json`).toString());
         for (let key in locale) {
-            output = output.replace(`{${key}}`, locale[key]);
+            output = output.replace(new RegExp(`{${(0, escape_string_regexp_1.default)(key)}}`, 'g'), locale[key]);
         }
         // 解讀 js
         let $ = cheerio_1.default.load(output);
