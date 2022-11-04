@@ -139,6 +139,7 @@ export default async function(params: Params) {
         } else if (params.onlyDefLang === false) {
             await build({
                 ...params,
+                lang,
                 outputDir: `${params.outputDir}/${lang}`
             })
         }

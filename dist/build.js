@@ -133,7 +133,7 @@ function default_1(params) {
                 yield build(params);
             }
             else if (params.onlyDefLang === false) {
-                yield build(Object.assign(Object.assign({}, params), { outputDir: `${params.outputDir}/${lang}` }));
+                yield build(Object.assign(Object.assign({}, params), { lang, outputDir: `${params.outputDir}/${lang}` }));
             }
         }
         console.log('Build Success.');
