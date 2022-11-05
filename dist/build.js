@@ -17,6 +17,7 @@ const path_1 = __importDefault(require("path"));
 const imagemin_1 = __importDefault(require("imagemin"));
 const imagemin_jpegtran_1 = __importDefault(require("imagemin-jpegtran"));
 const imagemin_pngquant_1 = __importDefault(require("imagemin-pngquant"));
+const imagemin_gifsicle_1 = __importDefault(require("imagemin-gifsicle"));
 const pors_1 = require("pors");
 const utils_1 = require("./utils");
 const compile_html_1 = require("./compile-html");
@@ -73,21 +74,47 @@ function build(params) {
                 }
             }));
         }
-        // image
-        if (data.ext === '.png' || data.ext === '.jpg') {
+        // png
+        if (data.ext === '.png') {
             if (params.env === 'prod') {
                 pawn.addAsync(() => __awaiter(this, void 0, void 0, function* () {
                     console.log(`正在壓縮: ${data.name}${data.ext}`);
-                    let buffer = fs_extra_1.default.readFileSync(file);
-                    let result = yield imagemin_1.default.buffer(buffer, {
+                    let result = yield (0, imagemin_1.default)([file], {
                         plugins: [
-                            (0, imagemin_jpegtran_1.default)(),
                             (0, imagemin_pngquant_1.default)({
                                 quality: [0.6, 0.8]
                             })
                         ]
                     });
-                    fs_extra_1.default.writeFileSync(file, result);
+                    fs_extra_1.default.writeFileSync(file, result[0].data);
+                }));
+            }
+        }
+        if (data.ext === '.jpg') {
+            if (params.env === 'prod') {
+                pawn.addAsync(() => __awaiter(this, void 0, void 0, function* () {
+                    console.log(`正在壓縮: ${data.name}${data.ext}`);
+                    let result = yield (0, imagemin_1.default)([file], {
+                        plugins: [
+                            (0, imagemin_jpegtran_1.default)()
+                        ]
+                    });
+                    fs_extra_1.default.writeFileSync(file, result[0].data);
+                }));
+            }
+        }
+        if (data.ext === '.gif') {
+            if (params.env === 'prod') {
+                pawn.addAsync(() => __awaiter(this, void 0, void 0, function* () {
+                    console.log(`正在壓縮: ${data.name}${data.ext}`);
+                    let result = yield (0, imagemin_1.default)([file], {
+                        plugins: [
+                            (0, imagemin_gifsicle_1.default)({
+                                optimizationLevel: 3
+                            })
+                        ]
+                    });
+                    fs_extra_1.default.writeFileSync(file, result[0].data);
                 }));
             }
         }

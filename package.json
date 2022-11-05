@@ -1,6 +1,6 @@
 {
   "name": "mini-website-packer",
-  "version": "1.2.4",
+  "version": "1.2.6",
   "description": "建立靜態網頁用的簡單工具",
   "main": "index.js",
   "scripts": {
@@ -34,8 +34,9 @@
     "handlebars": "^4.7.7",
     "html-minifier": "^4.0.0",
     "imagemin": "^7.0.1",
+    "imagemin-gifsicle": "^7.0.0",
     "imagemin-jpegtran": "^7.0.0",
-    "imagemin-pngquant": "^9.0.1",
+    "imagemin-pngquant": "^9.0.2",
     "pors": "^0.1.0",
     "postcss": "^8.2.5",
     "power-helper": "^0.4.4",
@@ -48,6 +49,7 @@
     "@types/cheerio": "^0.22.24",
     "@types/express": "^4.17.8",
     "@types/fs-extra": "^9.0.1",
+    "@types/imagemin": "^8.0.0",
     "@types/node": "^14.10.1",
     "tslib": "^2.0.1",
     "typescript": "^4.0.2"

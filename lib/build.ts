@@ -3,6 +3,7 @@ import path from 'path'
 import imagemin from 'imagemin'
 import imageminJpegtran from 'imagemin-jpegtran'
 import imageminPngquant from 'imagemin-pngquant'
+import imageminGifsicle from 'imagemin-gifsicle'
 import { Pawn } from 'pors'
 import { getDir } from './utils'
 import { compileHTML } from './compile-html'
@@ -78,21 +79,47 @@ function build(params: Params) {
                 }
             })
         }
-        // image
-        if (data.ext === '.png' || data.ext === '.jpg') {
+        // png
+        if (data.ext === '.png') {
             if (params.env === 'prod') {
                 pawn.addAsync(async() => {
                     console.log(`正在壓縮: ${data.name}${data.ext}`)
-                    let buffer = fsx.readFileSync(file)
-                    let result = await imagemin.buffer(buffer, {
+                    let result = await imagemin([file], {
                         plugins: [
-                            imageminJpegtran(),
                             imageminPngquant({
                                 quality: [0.6, 0.8]
                             })
                         ]
                     })
-                    fsx.writeFileSync(file, result)
+                    fsx.writeFileSync(file, result[0].data)
+                })
+            }
+        }
+        if (data.ext === '.jpg') {
+            if (params.env === 'prod') {
+                pawn.addAsync(async() => {
+                    console.log(`正在壓縮: ${data.name}${data.ext}`)
+                    let result = await imagemin([file], {
+                        plugins: [
+                            imageminJpegtran()
+                        ]
+                    })
+                    fsx.writeFileSync(file, result[0].data)
+                })
+            }
+        }
+        if (data.ext === '.gif') {
+            if (params.env === 'prod') {
+                pawn.addAsync(async() => {
+                    console.log(`正在壓縮: ${data.name}${data.ext}`)
+                    let result = await imagemin([file], {
+                        plugins: [
+                            imageminGifsicle({
+                                optimizationLevel: 3
+                            })
+                        ]
+                    })
+                    fsx.writeFileSync(file, result[0].data)
                 })
             }
         }
