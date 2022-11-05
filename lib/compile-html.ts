@@ -243,6 +243,13 @@ export async function compileHTML(html: string, params: CompileHTMLParams): Prom
     let scripts = getNodes($('script'))
     for (let script of scripts) {
         let content = getElementContent(script)
+        if ('scoped' in script.attribs) {
+            content = `
+                (function() {
+                    ${content}
+                })()
+            `
+        }
         if (content.trim()) {
             let result = await compileJs(content, {
                 mini: params.mini,

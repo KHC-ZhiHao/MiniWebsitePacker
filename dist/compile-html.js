@@ -232,6 +232,13 @@ function compileHTML(html, params) {
         let scripts = getNodes($('script'));
         for (let script of scripts) {
             let content = getElementContent(script);
+            if ('scoped' in script.attribs) {
+                content = `
+                (function() {
+                    ${content}
+                })()
+            `;
+            }
             if (content.trim()) {
                 let result = yield (0, compile_1.compileJs)(content, {
                     mini: params.mini,

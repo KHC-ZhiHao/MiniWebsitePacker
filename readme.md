@@ -62,7 +62,7 @@ npx mini-website-packer build --readonly --readonlyhost localhost
 
 ### 資料結構是固定的
 
-locales、pages、static、templates、package.json 這四個資料夾或檔案是固定的，可以使用`mini-website-packer init`建立樣本。
+locales、pages、static、templates 這四個資料夾是固定的。
 
 ### 語法介紹
 
@@ -98,12 +98,12 @@ locales、pages、static、templates、package.json 這四個資料夾或檔案�
 
 ```bash
 # 部屬
-npx mini-website-packer build --conf ./src/config.json --lang zh
+npx mini-website-packer build --conf ./config.json --lang zh
 # 開發
-npx mini-website-packer serve --conf ./src/config.json --lang zh
+npx mini-website-packer serve --conf ./config.json --lang zh
 ```
 
-src/config.json
+config.json
 
 ```json
 {
@@ -128,6 +128,30 @@ src/static/style/index.css
 /* 編譯後 */
 * {
     color: red
+}
+```
+
+##### 高階自定義
+
+除了 config.json 外，也可以透過 js 來建構 config，只要副檔名是 `.js` 即可：
+
+> 第一個參數 `handlebars` 即是 handlebars 的實例，可以讓使用者定義一些 helper 。
+
+```bash
+# 部屬
+npx mini-website-packer build --conf ./mwp.confing.js --lang zh
+```
+
+mwp.confing.js
+
+```js
+module.exports = async({ handlebars }) => {
+    return {
+        variables: {
+            primary: '#EE8269',
+            secondary: '#221814'
+        }
+    }
 }
 ```
 
@@ -435,6 +459,28 @@ console.log(args)
         cursor: pointer;
     }
 </style>
+```
+
+#### Script Scoped
+
+給予 `scoped` 標籤會讓內部程式碼包上一組閉包。
+
+```html
+<template>
+    <script scoped>
+        console.log('Hello.')
+    </script>
+</template>
+```
+
+以下是編譯後的結果：
+
+```html
+<script>
+    (function() {
+        console.log('Hello.')
+    })()
+</script>
 ```
 
 #### 語系

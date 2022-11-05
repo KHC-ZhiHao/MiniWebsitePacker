@@ -1,9 +1,9 @@
-import fsx from 'fs-extra'
 import cors from 'cors'
 import watch from 'watch'
 import build from './build'
 import express from 'express'
 import { Server } from 'http'
+import { readConfig } from './utils'
 
 type Props = {
     port: number
@@ -20,7 +20,7 @@ export default function(props: Props) {
     const buildFile = async() => {
         let config = {}
         if (props.confPath) {
-            config = JSON.parse(fsx.readFileSync(props.confPath).toString())
+            config = await readConfig(props.confPath)
         }
         await build({
             config,

@@ -12,19 +12,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs_extra_1 = __importDefault(require("fs-extra"));
 const cors_1 = __importDefault(require("cors"));
 const watch_1 = __importDefault(require("watch"));
 const build_1 = __importDefault(require("./build"));
 const express_1 = __importDefault(require("express"));
 const http_1 = require("http");
+const utils_1 = require("./utils");
 function default_1(props) {
     const app = (0, express_1.default)();
     const server = new http_1.Server(app);
     const buildFile = () => __awaiter(this, void 0, void 0, function* () {
         let config = {};
         if (props.confPath) {
-            config = JSON.parse(fs_extra_1.default.readFileSync(props.confPath).toString());
+            config = yield (0, utils_1.readConfig)(props.confPath);
         }
         yield (0, build_1.default)({
             config,

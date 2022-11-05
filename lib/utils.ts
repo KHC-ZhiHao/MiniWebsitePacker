@@ -1,3 +1,18 @@
+import fsx from 'fs-extra'
+import handlebars from 'handlebars'
+import { text } from 'power-helper'
+
+export const readConfig = async(path: string) => {
+    let context = {
+        handlebars
+    }
+    if (text.lastMatch(path, '.json')) {
+        return JSON.parse(fsx.readFileSync(path).toString())
+    } else {
+        return await require(`../../../${path}`)(context)
+    }
+}
+
 export const commentDelimiter = (comment: string) => {
     return `
         <!--|||-->
