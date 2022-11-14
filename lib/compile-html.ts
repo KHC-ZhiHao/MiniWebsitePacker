@@ -72,7 +72,11 @@ async function randerTemplate(file: string, html: string, templates: Templates, 
         }
         output = $.html()
         if (isHandlebars) {
-            output = handlebars.compile(output)(renderData)
+            output = handlebars.compile(output)({
+                ...renderData,
+                vars: variables,
+                props: {}
+            })
         }
         // 渲染模板
         let elements: cheerio.TagElement[] = []
@@ -85,7 +89,11 @@ async function randerTemplate(file: string, html: string, templates: Templates, 
             if (template) {
                 let content = template.content.toString()
                 if (template.isHandlebars) {
-                    content = handlebars.compile(content)(renderData)
+                    content = handlebars.compile(content)({
+                        ...renderData,
+                        vars: variables,
+                        props: element.attribs
+                    })
                 }
                 for (let key in element.attribs) {
                     content = content.replace(new RegExp(`-${escapeStringRegexp(key)}-`, 'g'), element.attribs[key])
@@ -220,7 +228,11 @@ export async function compileHTML(html: string, params: CompileHTMLParams): Prom
     output = output + '\n' + onceOutput.map(e => {
         let content = e.content
         if (e.isHandlebars) {
-            handlebars.compile(content)(params.renderData)
+            handlebars.compile(content)({
+                ...params.renderData,
+                vars: params.variables,
+                props: {}
+            })
         }
         content = refReplace(content)
         if (params.variables.env === 'dev') {

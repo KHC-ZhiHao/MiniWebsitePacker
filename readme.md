@@ -185,19 +185,26 @@ module.exports = async({ handlebars }) => {
 
 本庫原生支援 [Handlebars](https://handlebarsjs.com/)，只要將`.html`檔案改為`.hbs`副檔名即可啟用，可以借助該模板工具的邏輯來建構你的靜態網頁。
 
-> 所有的 `.hbs` 檔案吃的變數都來自 `config.renderData`。
+> 所有的 `.hbs` 檔案吃的變數都來自 `config.renderData`，但變數有兩額佔位符，分別是 `vars(環境變數)` 與 `props(模板傳遞的值)`。
 
 ```html
+<!-- template/wrapper.html -->
 <template>
+    <t-wrapper.title text="名字是："></t-wrapper.title>
     {{#each users}}
         <div>{{this}}</div>
     {{/each}}
+</template>
+
+<template name="title">
+    <div>{{ props.text }}</div>
 </template>
 ```
 
 以下是編譯後的結果：
 
 ```html
+<div>名字是：</div>
 <div>dave</div>
 <div>james</div>
 ```

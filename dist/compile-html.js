@@ -79,7 +79,7 @@ function randerTemplate(file, html, templates, variables, renderData, isHandleba
             }
             output = $.html();
             if (isHandlebars) {
-                output = handlebars_1.default.compile(output)(renderData);
+                output = handlebars_1.default.compile(output)(Object.assign(Object.assign({}, renderData), { vars: variables, props: {} }));
             }
             // 渲染模板
             let elements = [];
@@ -92,7 +92,7 @@ function randerTemplate(file, html, templates, variables, renderData, isHandleba
                 if (template) {
                     let content = template.content.toString();
                     if (template.isHandlebars) {
-                        content = handlebars_1.default.compile(content)(renderData);
+                        content = handlebars_1.default.compile(content)(Object.assign(Object.assign({}, renderData), { vars: variables, props: element.attribs }));
                     }
                     for (let key in element.attribs) {
                         content = content.replace(new RegExp(`-${(0, escape_string_regexp_1.default)(key)}-`, 'g'), element.attribs[key]);
@@ -209,7 +209,7 @@ function compileHTML(html, params) {
         output = output + '\n' + onceOutput.map(e => {
             let content = e.content;
             if (e.isHandlebars) {
-                handlebars_1.default.compile(content)(params.renderData);
+                handlebars_1.default.compile(content)(Object.assign(Object.assign({}, params.renderData), { vars: params.variables, props: {} }));
             }
             content = refReplace(content);
             if (params.variables.env === 'dev') {
