@@ -188,7 +188,7 @@ module.exports = async({ handlebars }) => {
 > 所有的 `.hbs` 檔案吃的變數都來自 `config.renderData`，但變數有兩額佔位符，分別是 `vars(環境變數)` 與 `props(模板傳遞的值)`。
 
 ```html
-<!-- template/wrapper.html -->
+<!-- template/wrapper.hbs -->
 <template>
     <t-wrapper.title text="名字是："></t-wrapper.title>
     {{#each users}}
@@ -488,6 +488,30 @@ console.log(args)
         console.log('Hello.')
     })()
 </script>
+```
+
+#### Style Scope
+
+給予 `scope` 標籤會讓內部 css 加上父類。
+
+```html
+<template>
+    <style scope=".parent">
+        div {
+            color: 'red'
+        }
+    </style>
+</template>
+```
+
+以下是編譯後的結果：
+
+```html
+<style>
+    .parent div {
+        color: 'red'
+    }
+</style>
 ```
 
 #### 語系

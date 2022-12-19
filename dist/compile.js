@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.compileCss = exports.compileJs = void 0;
+const scope_css_1 = __importDefault(require("scope-css"));
 const postcss_1 = __importDefault(require("postcss"));
 const clean_css_1 = __importDefault(require("clean-css"));
 const autoprefixer_1 = __importDefault(require("autoprefixer"));
@@ -52,6 +53,9 @@ const compileCss = (css, options) => __awaiter(void 0, void 0, void 0, function*
         let text = (0, escape_string_regexp_1.default)(`--${key}--`);
         let reg = new RegExp(text, 'g');
         code = code.replace(reg, options.variables[key]);
+    }
+    if (options.scope) {
+        code = (0, scope_css_1.default)(code, options.scope);
     }
     if (options.autoprefixer) {
         let post = (0, postcss_1.default)([

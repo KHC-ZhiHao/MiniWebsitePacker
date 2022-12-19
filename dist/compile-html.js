@@ -254,6 +254,7 @@ function compileHTML(html, params) {
             if (content.trim()) {
                 let result = yield (0, compile_1.compileCss)(content, {
                     mini: params.mini,
+                    scope: style.attribs.scope,
                     variables: params.variables,
                     autoprefixer: params.prod
                 });

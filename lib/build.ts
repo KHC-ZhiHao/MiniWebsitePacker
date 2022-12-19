@@ -143,6 +143,7 @@ function build(params: Params) {
                 let result = await compileCss(css, {
                     mini: params.mini,
                     variables,
+                    scope: '',
                     autoprefixer: params.env === 'prod'
                 })
                 fsx.writeFileSync(file, result)

@@ -277,6 +277,7 @@ export async function compileHTML(html: string, params: CompileHTMLParams): Prom
         if (content.trim()) {
             let result = await compileCss(content, {
                 mini: params.mini,
+                scope: style.attribs.scope,
                 variables: params.variables,
                 autoprefixer: params.prod
             })

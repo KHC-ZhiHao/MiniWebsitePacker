@@ -1,3 +1,4 @@
+import scope from 'scope-css'
 import postcss from 'postcss'
 import CleanCss from 'clean-css'
 import autoprefixer from 'autoprefixer'
@@ -37,6 +38,7 @@ export const compileJs = async (code: string, options: CompileJsOptions) => {
 
 type CompileCssOptions = {
     mini: boolean
+    scope: string
     autoprefixer: boolean
     variables: {
         [key: string]: any
@@ -50,6 +52,9 @@ export const compileCss = async (css: string, options: CompileCssOptions) => {
         let text = escapeStringRegexp(`--${key}--`)
         let reg = new RegExp(text, 'g')
         code = code.replace(reg, options.variables[key])
+    }
+    if (options.scope) {
+        code = scope(code, options.scope)
     }
     if (options.autoprefixer) {
         let post = postcss([

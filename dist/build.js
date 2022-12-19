@@ -138,6 +138,7 @@ function build(params) {
                 let result = yield (0, compile_1.compileCss)(css, {
                     mini: params.mini,
                     variables,
+                    scope: '',
                     autoprefixer: params.env === 'prod'
                 });
                 fs_extra_1.default.writeFileSync(file, result);

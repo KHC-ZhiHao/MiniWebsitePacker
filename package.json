@@ -1,6 +1,6 @@
 {
   "name": "mini-website-packer",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "description": "建立靜態網頁用的簡單工具",
   "main": "index.js",
   "scripts": {
@@ -41,6 +41,7 @@
     "postcss": "^8.2.5",
     "power-helper": "^0.4.4",
     "pretty": "^2.0.0",
+    "scope-css": "^1.2.1",
     "shortid": "^2.2.16",
     "terser": "^5.6.0",
     "watch": "^1.0.2"
